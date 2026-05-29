@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Treino de Guitarra</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fafaf7; color: #1a1a1a; padding: 16px; min-height: 100vh; }
+.container { max-width: 880px; margin: 0 auto; }
+h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+.subtitle { color: #666; font-size: 13px; margin-bottom: 18px; }
+.tabs { display: flex; gap: 4px; background: white; border: 1px solid #e5e5e0; border-radius: 12px; padding: 4px; margin-bottom: 18px; overflow-x: auto; }
+.tab-btn { flex: 1; min-width: max-content; padding: 10px 14px; border: none; background: transparent; cursor: pointer; font-size: 13px; font-weight: 600; color: #666; border-radius: 8px; transition: all 0.15s; white-space: nowrap; }
+.tab-btn:hover:not(.active) { background: #f0f0eb; }
+.tab-btn.active { background: #1a1a1a; color: white; }
+.panel { display: none; }
+.panel.active { display: block; }
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.stat { background: white; border: 1px solid #e5e5e0; border-radius: 10px; padding: 10px; text-align: center; }
+.stat-value { font-size: 20px; font-weight: 700; }
+.stat-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.settings { background: white; border: 1px solid #e5e5e0; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+.settings-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.settings-label { font-size: 12px; color: #666; margin-right: 4px; font-weight: 600; }
+.toggle { padding: 5px 11px; border: 1.5px solid #ddd; border-radius: 18px; background: white; cursor: pointer; font-size: 12px; font-weight: 500; color: #555; transition: all 0.12s; user-select: none; }
+.toggle.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+.toggle:hover:not(.active) { border-color: #999; }
+.q-card { background: white; border: 1px solid #e5e5e0; border-radius: 16px; padding: 24px 20px; margin-bottom: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.prompt-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.chord-display { font-size: 46px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
+.chord-type { font-size: 14px; color: #777; margin-bottom: 2px; }
+.formula { font-size: 12px; color: #aaa; font-style: italic; }
+.instruction { font-size: 13px; color: #666; margin-bottom: 12px; text-align: center; }
+.notes-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; margin-bottom: 14px; }
+.note-btn { padding: 14px 4px; border: 1.5px solid #ddd; border-radius: 9px; background: white; cursor: pointer; font-size: 15px; font-weight: 600; color: #333; transition: all 0.12s; user-select: none; }
+.note-btn:hover:not(:disabled) { border-color: #1a1a1a; transform: translateY(-1px); }
+.note-btn.selected { background: #ffd84a; border-color: #e6b800; }
+.note-btn.correct { background: #c8e6c9; border-color: #4caf50; color: #1b5e20; }
+.note-btn.wrong { background: #ffcdd2; border-color: #e53935; color: #b71c1c; }
+.note-btn.missed { background: #fff3cd; border-color: #ffa726; color: #6d4c00; }
+.note-btn:disabled { cursor: default; }
+.caged-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-bottom: 14px; }
+.caged-btn { padding: 16px 4px; border: 1.5px solid #ddd; border-radius: 9px; background: white; cursor: pointer; font-size: 18px; font-weight: 700; color: #333; transition: all 0.12s; user-select: none; }
+.caged-btn:hover:not(:disabled) { border-color: #1a1a1a; transform: translateY(-1px); }
+.caged-btn.selected { background: #ffd84a; border-color: #e6b800; }
+.caged-btn.correct { background: #c8e6c9; border-color: #4caf50; color: #1b5e20; }
+.caged-btn.wrong { background: #ffcdd2; border-color: #e53935; color: #b71c1c; }
+.caged-btn:disabled { cursor: default; }
+.actions { display: flex; gap: 10px; justify-content: center; margin-bottom: 8px; flex-wrap: wrap; }
+.btn { padding: 11px 22px; border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.btn-primary { background: #1a1a1a; color: white; }
+.btn-primary:hover:not(:disabled) { background: #333; }
+.btn-secondary { background: #f0f0eb; color: #333; }
+.btn-secondary:hover:not(:disabled) { background: #e5e5e0; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.feedback { text-align: center; font-size: 14px; font-weight: 600; min-height: 22px; margin-bottom: 6px; }
+.feedback.success { color: #2e7d32; }
+.feedback.error { color: #c62828; }
+.answer-detail { text-align: center; font-size: 13px; color: #666; min-height: 18px; }
+.answer-detail strong { color: #1a1a1a; }
+.fretboard-wrap { background: white; border: 1px solid #e5e5e0; border-radius: 12px; padding: 12px; margin-bottom: 14px; overflow-x: auto; }
+.fretboard { display: block; margin: 0 auto; max-width: 760px; width: 100%; }
+.fret-line { stroke: #999; stroke-width: 1.5; }
+.fret-line.nut { stroke: #1a1a1a; stroke-width: 4; }
+.string-line { stroke: #777; }
+.fret-label { font-size: 11px; fill: #888; text-anchor: middle; }
+.string-label { font-size: 11px; fill: #888; text-anchor: end; font-weight: 600; }
+.inlay { fill: #d8d8d2; }
+.fret-spot { cursor: pointer; }
+.fret-spot circle { fill: transparent; stroke: transparent; transition: all 0.12s; }
+.fret-spot:hover circle { fill: rgba(26,26,26,0.08); stroke: #999; stroke-width: 1; }
+.fret-spot.selected circle { fill: #ffd84a; stroke: #e6b800; stroke-width: 2; }
+.fret-spot.target circle { fill: #1a1a1a; stroke: #1a1a1a; }
+.fret-spot.correct circle { fill: #4caf50; stroke: #2e7d32; stroke-width: 2; }
+.fret-spot.wrong circle { fill: #e53935; stroke: #b71c1c; stroke-width: 2; }
+.fret-spot.missed circle { fill: #ffa726; stroke: #ef6c00; stroke-width: 2; }
+.fret-spot text { font-size: 10px; font-weight: 700; text-anchor: middle; dominant-baseline: central; fill: transparent; pointer-events: none; }
+.fret-spot.target text, .fret-spot.correct text, .fret-spot.wrong text, .fret-spot.missed text { fill: white; }
+.fret-spot.selected text { fill: #1a1a1a; }
+.footer-tip { text-align: center; font-size: 11px; color: #999; margin-top: 18px; line-height: 1.6; }
+@media (max-width: 600px) {
+  .notes-grid { grid-template-columns: repeat(4, 1fr); }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .chord-display { font-size: 38px; }
+  h1 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🎸 Treino de Guitarra</h1>
+  <p class="subtitle">Tríades, notas no braço e CAGED.</p>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="triads">Tríades</button>
+    <button class="tab-btn" data-tab="notes">Notas no Braço</button>
+    <button class="tab-btn" data-tab="find">Encontrar Nota</button>
+    <button class="tab-btn" data-tab="caged-id">CAGED: Forma</button>
+    <button class="tab-btn" data-tab="caged-play">CAGED: Tocar</button>
+  </div>
+
+  <div class="panel active" data-panel="triads">
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value" id="t-score">0</div><div class="stat-label">Acertos</div></div>
+      <div class="stat"><div class="stat-value" id="t-total">0</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-value" id="t-streak">0</div><div class="stat-label">Sequência</div></div>
+      <div class="stat"><div class="stat-value" id="t-best">0</div><div class="stat-label">Recorde</div></div>
+    </div>
+    <div class="settings"><div class="settings-row">
+      <span class="settings-label">Tipos:</span>
+      <div class="toggle active" data-triad-type="major">Maior</div>
+      <div class="toggle active" data-triad-type="minor">Menor</div>
+      <div class="toggle" data-triad-type="dim">Diminuta</div>
+      <div class="toggle" data-triad-type="aug">Aumentada</div>
+    </div></div>
+    <div class="q-card">
+      <div class="prompt-label">Qual a tríade de</div>
+      <div class="chord-display" id="t-chord">C</div>
+      <div class="chord-type" id="t-ctype">maior</div>
+      <div class="formula" id="t-formula">1ª + 3ª maior + 5ª justa</div>
+    </div>
+    <p class="instruction">Clique nas 3 notas:</p>
+    <div class="notes-grid" id="t-notes"></div>
+    <div class="actions">
+      <button class="btn btn-secondary" id="t-clear">Limpar</button>
+      <button class="btn btn-primary" id="t-check" disabled>Verificar</button>
+      <button class="btn btn-primary" id="t-next" style="display:none">Próximo →</button>
+    </div>
+    <div class="feedback" id="t-fb"></div>
+    <div class="answer-detail" id="t-detail"></div>
+  </div>
+
+  <div class="panel" data-panel="notes">
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value" id="n-score">0</div><div class="stat-label">Acertos</div></div>
+      <div class="stat"><div class="stat-value" id="n-total">0</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-value" id="n-streak">0</div><div class="stat-label">Sequência</div></div>
+      <div class="stat"><div class="stat-value" id="n-best">0</div><div class="stat-label">Recorde</div></div>
+    </div>
+    <div class="settings">
+      <div class="settings-row">
+        <span class="settings-label">Cordas:</span>
+        <div class="toggle active" data-nstring="6">6ª (E)</div>
+        <div class="toggle active" data-nstring="5">5ª (A)</div>
+        <div class="toggle" data-nstring="4">4ª (D)</div>
+        <div class="toggle" data-nstring="3">3ª (G)</div>
+        <div class="toggle" data-nstring="2">2ª (B)</div>
+        <div class="toggle" data-nstring="1">1ª (E)</div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label">Até casa:</span>
+        <div class="toggle" data-nmaxfret="5">5</div>
+        <div class="toggle active" data-nmaxfret="7">7</div>
+        <div class="toggle" data-nmaxfret="12">12</div>
+        <div class="toggle" data-nmaxfret="15">15</div>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="prompt-label">Que nota é essa?</div>
+      <div class="chord-display" id="n-pos">—</div>
+      <div class="chord-type" id="n-hint">corda · casa</div>
+    </div>
+    <div class="fretboard-wrap" id="n-fb-wrap"></div>
+    <p class="instruction">Clique na nota correta:</p>
+    <div class="notes-grid" id="n-notes"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="n-next" style="display:none">Próximo →</button>
+    </div>
+    <div class="feedback" id="n-fb"></div>
+    <div class="answer-detail" id="n-detail"></div>
+  </div>
+
+  <div class="panel" data-panel="find">
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value" id="f-score">0</div><div class="stat-label">Acertos</div></div>
+      <div class="stat"><div class="stat-value" id="f-total">0</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-value" id="f-streak">0</div><div class="stat-label">Sequência</div></div>
+      <div class="stat"><div class="stat-value" id="f-best">0</div><div class="stat-label">Recorde</div></div>
+    </div>
+    <div class="settings">
+      <div class="settings-row">
+        <span class="settings-label">Cordas:</span>
+        <div class="toggle active" data-fstring="6">6ª</div>
+        <div class="toggle active" data-fstring="5">5ª</div>
+        <div class="toggle" data-fstring="4">4ª</div>
+        <div class="toggle" data-fstring="3">3ª</div>
+        <div class="toggle" data-fstring="2">2ª</div>
+        <div class="toggle" data-fstring="1">1ª</div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label">Até casa:</span>
+        <div class="toggle" data-fmaxfret="7">7</div>
+        <div class="toggle active" data-fmaxfret="12">12</div>
+        <div class="toggle" data-fmaxfret="15">15</div>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="prompt-label">Encontre todas as posições de</div>
+      <div class="chord-display" id="f-note">C</div>
+      <div class="chord-type" id="f-progress">0 marcadas</div>
+    </div>
+    <p class="instruction">Clique nas casas (apenas nas cordas ativas):</p>
+    <div class="fretboard-wrap" id="f-fb-wrap"></div>
+    <div class="actions">
+      <button class="btn btn-secondary" id="f-give">Desistir</button>
+      <button class="btn btn-primary" id="f-check">Verificar</button>
+      <button class="btn btn-primary" id="f-next" style="display:none">Próximo →</button>
+    </div>
+    <div class="feedback" id="f-fb"></div>
+  </div>
+
+  <div class="panel" data-panel="caged-id">
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value" id="ci-score">0</div><div class="stat-label">Acertos</div></div>
+      <div class="stat"><div class="stat-value" id="ci-total">0</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-value" id="ci-streak">0</div><div class="stat-label">Sequência</div></div>
+      <div class="stat"><div class="stat-value" id="ci-best">0</div><div class="stat-label">Recorde</div></div>
+    </div>
+    <div class="q-card">
+      <div class="prompt-label">Qual forma CAGED é essa?</div>
+      <div class="chord-display" id="ci-chord">G</div>
+      <div class="chord-type" id="ci-hint">nessa posição</div>
+    </div>
+    <div class="fretboard-wrap" id="ci-fb-wrap"></div>
+    <p class="instruction">Escolha a forma:</p>
+    <div class="caged-grid">
+      <button class="caged-btn" data-shape="C">C</button>
+      <button class="caged-btn" data-shape="A">A</button>
+      <button class="caged-btn" data-shape="G">G</button>
+      <button class="caged-btn" data-shape="E">E</button>
+      <button class="caged-btn" data-shape="D">D</button>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="ci-next" style="display:none">Próximo →</button>
+    </div>
+    <div class="feedback" id="ci-fb"></div>
+    <div class="answer-detail" id="ci-detail"></div>
+  </div>
+
+  <div class="panel" data-panel="caged-play">
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value" id="cp-score">0</div><div class="stat-label">Acertos</div></div>
+      <div class="stat"><div class="stat-value" id="cp-total">0</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-value" id="cp-streak">0</div><div class="stat-label">Sequência</div></div>
+      <div class="stat"><div class="stat-value" id="cp-best">0</div><div class="stat-label">Recorde</div></div>
+    </div>
+    <div class="q-card">
+      <div class="prompt-label">Toque este acorde usando a forma indicada</div>
+      <div class="chord-display" id="cp-chord">G</div>
+      <div class="chord-type" id="cp-hint">forma A · base na casa 10</div>
+    </div>
+    <p class="instruction">Clique nas casas que formam o acorde:</p>
+    <div class="fretboard-wrap" id="cp-fb-wrap"></div>
+    <div class="actions">
+      <button class="btn btn-secondary" id="cp-clear">Limpar</button>
+      <button class="btn btn-primary" id="cp-check">Verificar</button>
+      <button class="btn btn-primary" id="cp-next" style="display:none">Próximo →</button>
+    </div>
+    <div class="feedback" id="cp-fb"></div>
+    <div class="answer-detail" id="cp-detail"></div>
+  </div>
+
+  <p class="footer-tip">
+    💡 Notas em sustenidos. Em bemóis: C#=Db · D#=Eb · F#=Gb · G#=Ab · A#=Bb<br>
+    Enter verifica/avança.
+  </p>
+</div>
+<script>
+const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const TUNING = ['E','A','D','G','B','E'];
+function noteAt(s, f) { return NOTES[(NOTES.indexOf(TUNING[s]) + f) % 12]; }
+
+const CAGED = {
+  E: { frets: [0,2,2,1,0,0], roles: ['R','5','R','3','5','R'], rootStringIdx: 0, rootFretInShape: 0 },
+  D: { frets: [-1,-1,0,2,3,2], roles: [null,null,'R','5','R','3'], rootStringIdx: 2, rootFretInShape: 0 },
+  C: { frets: [-1,3,2,0,1,0], roles: [null,'R','3','5','R','3'], rootStringIdx: 1, rootFretInShape: 3 },
+  A: { frets: [-1,0,2,2,2,0], roles: [null,'R','5','R','3','5'], rootStringIdx: 1, rootFretInShape: 0 },
+  G: { frets: [3,2,0,0,0,3], roles: ['R','3','5','R','3','R'], rootStringIdx: 0, rootFretInShape: 3 }
+};
+
+function applyShape(shape, rootNote) {
+  const s = CAGED[shape];
+  const ti = NOTES.indexOf(rootNote);
+  const oi = NOTES.indexOf(TUNING[s.rootStringIdx]);
+  const rsf = (ti - oi + 12) % 12;
+  let off = rsf - s.rootFretInShape;
+  if (off < 0) off += 12;
+  return s.frets.map(f => f === -1 ? -1 : f + off);
+}
+
+document.querySelectorAll('.tab-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelector('.panel[data-panel="' + b.dataset.tab + '"]').classList.add('active');
+  });
+});
+
+function makeStats(p, k) {
+  const st = { score: 0, total: 0, streak: 0, best: 0 };
+  try { st.best = parseInt(localStorage.getItem(k) || '0', 10) || 0; } catch(e) {}
+  const el = i => document.getElementById(p + i);
+  function render() { el('-score').textContent = st.score; el('-total').textContent = st.total; el('-streak').textContent = st.streak; el('-best').textContent = st.best; }
+  function correct() { st.score++; st.total++; st.streak++; if (st.streak > st.best) { st.best = st.streak; try { localStorage.setItem(k, st.best); } catch(e) {} } render(); }
+  function wrong() { st.total++; st.streak = 0; render(); }
+  render();
+  return { correct, wrong };
+}
+
+function renderFB(opts) {
+  const container = opts.container;
+  const fromFret = opts.fromFret || 0;
+  const toFret = opts.toFret || 12;
+  const dots = opts.dots || [];
+  const clickable = !!opts.clickable;
+  const onClick = opts.onClick;
+  const visible = toFret - fromFret;
+  const padL = 36, padR = 16, padT = 16, padB = 22;
+  const w = 760, h = 180;
+  const fbW = w - padL - padR, fbH = h - padT - padB;
+  const sg = fbH / 5, fg = fbW / visible;
+  let svg = '<svg class="fretboard" viewBox="0 0 ' + w + ' ' + h + '">';
+  const single = [3,5,7,9,15,17,19,21], dbl = [12,24];
+  for (let f = fromFret + 1; f <= toFret; f++) {
+    const x = padL + (f - fromFret - 0.5) * fg;
+    if (single.indexOf(f) >= 0) svg += '<circle class="inlay" cx="' + x + '" cy="' + (padT + fbH / 2) + '" r="5"/>';
+    else if (dbl.indexOf(f) >= 0) {
+      svg += '<circle class="inlay" cx="' + x + '" cy="' + (padT + sg * 1.5) + '" r="5"/>';
+      svg += '<circle class="inlay" cx="' + x + '" cy="' + (padT + sg * 3.5) + '" r="5"/>';
+    }
+  }
+  for (let f = 0; f <= visible; f++) {
+    const x = padL + f * fg;
+    const nut = fromFret === 0 && f === 0;
+    svg += '<line class="fret-line' + (nut ? ' nut' : '') + '" x1="' + x + '" y1="' + padT + '" x2="' + x + '" y2="' + (padT + fbH) + '"/>';
+  }
+  const openStrings = new Set();
+  dots.forEach(d => { if (!d.muted && d.fret === 0) openStrings.add(d.stringIdx); });
+  for (let s = 0; s < 6; s++) {
+    const y = padT + s * sg;
+    const sw = 1 + (5 - s) * 0.25;
+    svg += '<line class="string-line" x1="' + padL + '" y1="' + y + '" x2="' + (padL + fbW) + '" y2="' + y + '" stroke-width="' + sw + '"/>';
+    if (!openStrings.has(5 - s)) {
+      svg += '<text class="string-label" x="' + (padL - 5) + '" y="' + (y + 4) + '">' + TUNING[5 - s] + '</text>';
+    }
+  }
+  for (let f = fromFret; f <= toFret; f++) {
+    if (f === 0) continue;
+    const x = padL + (f - fromFret - 0.5) * fg;
+    svg += '<text class="fret-label" x="' + x + '" y="' + (h - 5) + '">' + f + '</text>';
+  }
+  if (clickable) {
+    for (let s = 0; s < 6; s++) {
+      for (let f = fromFret; f <= toFret; f++) {
+        if (f === fromFret && fromFret > 0) continue;
+        const sIdx = 5 - s;
+        const x = f === 0 ? padL - 14 : padL + (f - fromFret - 0.5) * fg;
+        const y = padT + s * sg;
+        const note = noteAt(sIdx, f);
+        svg += '<g class="fret-spot" data-string="' + sIdx + '" data-fret="' + f + '" data-note="' + note + '"><circle cx="' + x + '" cy="' + y + '" r="11"/><text x="' + x + '" y="' + y + '"></text></g>';
+      }
+    }
+  }
+  dots.forEach(d => {
+    if (d.muted) {
+      const s = 5 - d.stringIdx;
+      const y = padT + s * sg;
+      svg += '<text x="' + (padL - 16) + '" y="' + (y + 4) + '" style="font-size:13px;fill:#c62828;font-weight:700;text-anchor:middle">×</text>';
+      return;
+    }
+    if (d.fret < fromFret || d.fret > toFret) return;
+    const s = 5 - d.stringIdx;
+    const x = d.fret === 0 ? padL - 14 : padL + (d.fret - fromFret - 0.5) * fg;
+    const y = padT + s * sg;
+    const cls = d.cls || 'target';
+    const label = d.label != null ? d.label : '';
+    svg += '<g class="fret-spot ' + cls + '"><circle cx="' + x + '" cy="' + y + '" r="11"/><text x="' + x + '" y="' + y + '">' + label + '</text></g>';
+  });
+  svg += '</svg>';
+  container.innerHTML = svg;
+  if (clickable && onClick) {
+    container.querySelectorAll('.fret-spot[data-string]').forEach(g => {
+      g.addEventListener('click', () => onClick({ stringIdx: +g.dataset.string, fret: +g.dataset.fret, note: g.dataset.note }));
+    });
+  }
+}
+
+const TRIADS = {
+  major: { name: 'maior', symbol: '', intervals: [0,4,7], formula: '1ª + 3ª maior + 5ª justa' },
+  minor: { name: 'menor', symbol: 'm', intervals: [0,3,7], formula: '1ª + 3ª menor + 5ª justa' },
+  dim: { name: 'diminuta', symbol: '°', intervals: [0,3,6], formula: '1ª + 3ª menor + 5ª diminuta' },
+  aug: { name: 'aumentada', symbol: '+', intervals: [0,4,8], formula: '1ª + 3ª maior + 5ª aumentada' }
+};
+
+(function() {
+  const stats = makeStats('t', 'triad-best');
+  let active = ['major','minor'], cur = null, sel = new Set(), ans = false;
+  const grid = document.getElementById('t-notes');
+  NOTES.forEach(n => {
+    const b = document.createElement('button');
+    b.className = 'note-btn'; b.textContent = n; b.dataset.note = n;
+    b.addEventListener('click', () => {
+      if (ans) return;
+      if (sel.has(n)) { sel.delete(n); b.classList.remove('selected'); }
+      else if (sel.size < 3) { sel.add(n); b.classList.add('selected'); }
+      document.getElementById('t-check').disabled = sel.size !== 3;
+    });
+    grid.appendChild(b);
+  });
+  document.querySelectorAll('.toggle[data-triad-type]').forEach(t => {
+    t.addEventListener('click', () => {
+      const k = t.dataset.triadType;
+      if (t.classList.contains('active')) {
+        if (active.length === 1) return;
+        t.classList.remove('active'); active = active.filter(x => x !== k);
+      } else { t.classList.add('active'); active.push(k); }
+    });
+  });
+  function next() {
+    const r = NOTES[Math.floor(Math.random() * 12)];
+    const tk = active[Math.floor(Math.random() * active.length)];
+    const t = TRIADS[tk];
+    const ri = NOTES.indexOf(r);
+    cur = { root: r, type: t, notes: t.intervals.map(i => NOTES[(ri + i) % 12]) };
+    document.getElementById('t-chord').textContent = r + t.symbol;
+    document.getElementById('t-ctype').textContent = t.name;
+    document.getElementById('t-formula').textContent = t.formula;
+    sel.clear(); ans = false;
+    document.querySelectorAll('#t-notes .note-btn').forEach(b => { b.className = 'note-btn'; b.disabled = false; });
+    document.getElementById('t-check').disabled = true;
+    document.getElementById('t-check').style.display = '';
+    document.getElementById('t-next').style.display = 'none';
+    document.getElementById('t-fb').textContent = '';
+    document.getElementById('t-detail').innerHTML = '';
+  }
+  function check() {
+    ans = true;
+    const cs = new Set(cur.notes);
+    const ok = cs.size === sel.size && [...cs].every(n => sel.has(n));
+    document.querySelectorAll('#t-notes .note-btn').forEach(b => {
+      const n = b.dataset.note; b.disabled = true;
+      if (cs.has(n) && sel.has(n)) b.classList.add('correct');
+      else if (sel.has(n)) { b.classList.remove('selected'); b.classList.add('wrong'); }
+      else if (cs.has(n)) b.classList.add('missed');
+    });
+    const fb = document.getElementById('t-fb');
+    if (ok) { stats.correct(); fb.textContent = '✓ Mandou bem!'; fb.className = 'feedback success'; }
+    else { stats.wrong(); fb.textContent = '✗ Confira a resposta:'; fb.className = 'feedback error'; }
+    document.getElementById('t-detail').innerHTML = '<strong>' + cur.root + cur.type.symbol + '</strong> = ' + cur.notes.join(' – ');
+    document.getElementById('t-check').style.display = 'none';
+    document.getElementById('t-next').style.display = '';
+  }
+  document.getElementById('t-check').addEventListener('click', check);
+  document.getElementById('t-next').addEventListener('click', next);
+  document.getElementById('t-clear').addEventListener('click', () => {
+    if (ans) return;
+    sel.clear();
+    document.querySelectorAll('#t-notes .note-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('t-check').disabled = true;
+  });
+  document.addEventListener('keydown', e => {
+    if (document.querySelector('.panel.active').dataset.panel !== 'triads') return;
+    if (e.key === 'Enter') { if (ans) next(); else if (sel.size === 3) check(); }
+  });
+  next();
+})();
+
+(function() {
+  const stats = makeStats('n', 'notes-best');
+  let actStr = new Set([0,1]), maxF = 7, cur = null, ans = false;
+  document.querySelectorAll('.toggle[data-nstring]').forEach(t => {
+    t.addEventListener('click', () => {
+      const idx = 6 - +t.dataset.nstring;
+      if (t.classList.contains('active')) {
+        if (actStr.size === 1) return;
+        t.classList.remove('active'); actStr.delete(idx);
+      } else { t.classList.add('active'); actStr.add(idx); }
+    });
+  });
+  document.querySelectorAll('.toggle[data-nmaxfret]').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.toggle[data-nmaxfret]').forEach(x => x.classList.remove('active'));
+      t.classList.add('active'); maxF = +t.dataset.nmaxfret;
+    });
+  });
+  const grid = document.getElementById('n-notes');
+  NOTES.forEach(n => {
+    const b = document.createElement('button');
+    b.className = 'note-btn'; b.textContent = n; b.dataset.note = n;
+    b.addEventListener('click', () => { if (!ans) answer(n, b); });
+    grid.appendChild(b);
+  });
+  function next() {
+    const arr = [...actStr];
+    const sIdx = arr[Math.floor(Math.random() * arr.length)];
+    const f = Math.floor(Math.random() * (maxF + 1));
+    cur = { sIdx: sIdx, fret: f, note: noteAt(sIdx, f) };
+    document.getElementById('n-pos').textContent = 'Corda ' + (6 - sIdx) + ' · Casa ' + f;
+    document.getElementById('n-hint').textContent = f === 0 ? '(' + TUNING[sIdx] + ' solta)' : '(corda ' + TUNING[sIdx] + ', ' + f + 'ª casa)';
+    ans = false;
+    document.querySelectorAll('#n-notes .note-btn').forEach(b => { b.className = 'note-btn'; b.disabled = false; });
+    document.getElementById('n-next').style.display = 'none';
+    document.getElementById('n-fb').textContent = '';
+    document.getElementById('n-detail').innerHTML = '';
+    const fr = Math.max(0, f - 4), to = Math.max(Math.min(maxF + 1, f + 4), fr + 5);
+    renderFB({ container: document.getElementById('n-fb-wrap'), fromFret: fr, toFret: to, dots: [{ stringIdx: sIdx, fret: f, cls: 'target', label: '?' }] });
+  }
+  function answer(picked, btn) {
+    ans = true;
+    document.querySelectorAll('#n-notes .note-btn').forEach(b => b.disabled = true);
+    const fb = document.getElementById('n-fb');
+    if (picked === cur.note) { stats.correct(); btn.classList.add('correct'); fb.textContent = '✓ Certo!'; fb.className = 'feedback success'; }
+    else { stats.wrong(); btn.classList.add('wrong'); const c = document.querySelector('#n-notes .note-btn[data-note="' + cur.note + '"]'); if (c) c.classList.add('correct'); fb.textContent = '✗ Era ' + cur.note; fb.className = 'feedback error'; }
+    document.getElementById('n-detail').innerHTML = '<strong>Corda ' + (6 - cur.sIdx) + ', casa ' + cur.fret + '</strong> = ' + cur.note;
+    document.getElementById('n-next').style.display = '';
+    const fr = Math.max(0, cur.fret - 4), to = Math.max(Math.min(maxF + 1, cur.fret + 4), fr + 5);
+    renderFB({ container: document.getElementById('n-fb-wrap'), fromFret: fr, toFret: to, dots: [{ stringIdx: cur.sIdx, fret: cur.fret, cls: picked === cur.note ? 'correct' : 'wrong', label: cur.note }] });
+  }
+  document.getElementById('n-next').addEventListener('click', next);
+  document.addEventListener('keydown', e => {
+    if (document.querySelector('.panel.active').dataset.panel !== 'notes') return;
+    if (e.key === 'Enter' && ans) next();
+  });
+  next();
+})();
+
+(function() {
+  const stats = makeStats('f', 'find-best');
+  let actStr = new Set([0,1]), maxF = 12, cur = null, sel = [], ans = false;
+  document.querySelectorAll('.toggle[data-fstring]').forEach(t => {
+    t.addEventListener('click', () => {
+      const idx = 6 - +t.dataset.fstring;
+      if (t.classList.contains('active')) {
+        if (actStr.size === 1) return;
+        t.classList.remove('active'); actStr.delete(idx);
+      } else { t.classList.add('active'); actStr.add(idx); }
+    });
+  });
+  document.querySelectorAll('.toggle[data-fmaxfret]').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.toggle[data-fmaxfret]').forEach(x => x.classList.remove('active'));
+      t.classList.add('active'); maxF = +t.dataset.fmaxfret;
+    });
+  });
+  function targets() {
+    const out = [];
+    for (const sIdx of actStr) for (let f = 0; f <= maxF; f++) if (noteAt(sIdx, f) === cur.note) out.push({ stringIdx: sIdx, fret: f });
+    return out;
+  }
+  function render() {
+    const dots = sel.map(p => ({ stringIdx: p.stringIdx, fret: p.fret, cls: 'selected' }));
+    renderFB({
+      container: document.getElementById('f-fb-wrap'),
+      fromFret: 0, toFret: maxF,
+      clickable: !ans,
+      onClick: function(pos) {
+        if (ans) return;
+        if (!actStr.has(pos.stringIdx)) return;
+        const i = sel.findIndex(p => p.stringIdx === pos.stringIdx && p.fret === pos.fret);
+        if (i >= 0) sel.splice(i, 1);
+        else sel.push({ stringIdx: pos.stringIdx, fret: pos.fret });
+        document.getElementById('f-progress').textContent = sel.length + ' marcadas';
+        render();
+      },
+      dots: dots
+    });
+  }
+  function next() {
+    cur = { note: NOTES[Math.floor(Math.random() * 12)] };
+    sel = []; ans = false;
+    document.getElementById('f-note').textContent = cur.note;
+    document.getElementById('f-progress').textContent = '0 marcadas';
+    document.getElementById('f-fb').textContent = '';
+    document.getElementById('f-check').style.display = '';
+    document.getElementById('f-give').style.display = '';
+    document.getElementById('f-next').style.display = 'none';
+    render();
+  }
+  function check() {
+    ans = true;
+    const tgts = targets();
+    const tSet = new Set(tgts.map(t => t.stringIdx + '-' + t.fret));
+    const sSet = new Set(sel.map(s => s.stringIdx + '-' + s.fret));
+    const ok = tSet.size === sSet.size && [...tSet].every(k => sSet.has(k));
+    const dots = [];
+    tgts.forEach(t => dots.push({ stringIdx: t.stringIdx, fret: t.fret, cls: sSet.has(t.stringIdx + '-' + t.fret) ? 'correct' : 'missed', label: cur.note }));
+    sel.forEach(s => { if (!tSet.has(s.stringIdx + '-' + s.fret)) dots.push({ stringIdx: s.stringIdx, fret: s.fret, cls: 'wrong', label: noteAt(s.stringIdx, s.fret) }); });
+    renderFB({ container: document.getElementById('f-fb-wrap'), fromFret: 0, toFret: maxF, dots: dots });
+    const fb = document.getElementById('f-fb');
+    if (ok) { stats.correct(); fb.textContent = '✓ Achou todas as ' + tgts.length + '!'; fb.className = 'feedback success'; }
+    else { stats.wrong(); fb.textContent = '✗ Eram ' + tgts.length + '. Verde=ok · laranja=faltou · vermelho=errado.'; fb.className = 'feedback error'; }
+    document.getElementById('f-check').style.display = 'none';
+    document.getElementById('f-give').style.display = 'none';
+    document.getElementById('f-next').style.display = '';
+  }
+  function give() {
+    if (ans) return;
+    ans = true; stats.wrong();
+    const tgts = targets();
+    renderFB({ container: document.getElementById('f-fb-wrap'), fromFret: 0, toFret: maxF, dots: tgts.map(t => ({ stringIdx: t.stringIdx, fret: t.fret, cls: 'missed', label: cur.note })) });
+    const fb = document.getElementById('f-fb');
+    fb.textContent = 'Eram ' + tgts.length + ' posições.'; fb.className = 'feedback error';
+    document.getElementById('f-check').style.display = 'none';
+    document.getElementById('f-give').style.display = 'none';
+    document.getElementById('f-next').style.display = '';
+  }
+  document.getElementById('f-check').addEventListener('click', check);
+  document.getElementById('f-give').addEventListener('click', give);
+  document.getElementById('f-next').addEventListener('click', next);
+  document.addEventListener('keydown', e => {
+    if (document.querySelector('.panel.active').dataset.panel !== 'find') return;
+    if (e.key === 'Enter') { if (ans) next(); else check(); }
+  });
+  next();
+})();
+
+(function() {
+  const stats = makeStats('ci', 'caged-id-best');
+  let cur = null, ans = false;
+  function next() {
+    const shapes = ['C','A','G','E','D'];
+    const sh = shapes[Math.floor(Math.random() * 5)];
+    const r = NOTES[Math.floor(Math.random() * 12)];
+    const frets = applyShape(sh, r);
+    cur = { shape: sh, root: r, frets: frets };
+    document.getElementById('ci-chord').textContent = r;
+    const valid = frets.filter(f => f >= 0);
+    const minF = Math.min.apply(null, valid);
+    document.getElementById('ci-hint').textContent = 'tocado na ' + (minF === 0 ? 'posição aberta' : minF + 'ª casa');
+    ans = false;
+    document.querySelectorAll('.caged-btn').forEach(b => { b.className = 'caged-btn'; b.disabled = false; });
+    document.getElementById('ci-next').style.display = 'none';
+    document.getElementById('ci-fb').textContent = '';
+    document.getElementById('ci-detail').innerHTML = '';
+    const maxFt = Math.max.apply(null, valid);
+    const fr = Math.max(0, minF - 1), to = Math.max(maxFt + 1, fr + 5);
+    const dots = [];
+    frets.forEach((f, i) => {
+      if (f < 0) { dots.push({ stringIdx: i, muted: true }); return; }
+      dots.push({ stringIdx: i, fret: f, cls: CAGED[sh].roles[i] === 'R' ? 'correct' : 'target', label: CAGED[sh].roles[i] });
+    });
+    renderFB({ container: document.getElementById('ci-fb-wrap'), fromFret: fr, toFret: to, dots: dots });
+  }
+  document.querySelectorAll('.caged-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      if (ans) return;
+      ans = true;
+      document.querySelectorAll('.caged-btn').forEach(x => x.disabled = true);
+      const p = b.dataset.shape;
+      const fb = document.getElementById('ci-fb');
+      if (p === cur.shape) { stats.correct(); b.classList.add('correct'); fb.textContent = '✓ Isso!'; fb.className = 'feedback success'; }
+      else { stats.wrong(); b.classList.add('wrong'); document.querySelector('.caged-btn[data-shape="' + cur.shape + '"]').classList.add('correct'); fb.textContent = '✗ Era forma ' + cur.shape; fb.className = 'feedback error'; }
+      document.getElementById('ci-detail').innerHTML = '<strong>' + cur.root + '</strong> com forma <strong>' + cur.shape + '</strong> · verde=tônica(R), preto=3ª/5ª';
+      document.getElementById('ci-next').style.display = '';
+    });
+  });
+  document.getElementById('ci-next').addEventListener('click', next);
+  document.addEventListener('keydown', e => {
+    if (document.querySelector('.panel.active').dataset.panel !== 'caged-id') return;
+    if (e.key === 'Enter' && ans) next();
+  });
+  next();
+})();
+
+(function() {
+  const stats = makeStats('cp', 'caged-play-best');
+  let cur = null, sel = [], ans = false;
+  function next() {
+    const shapes = ['C','A','G','E','D'];
+    const sh = shapes[Math.floor(Math.random() * 5)];
+    const r = NOTES[Math.floor(Math.random() * 12)];
+    const frets = applyShape(sh, r);
+    cur = { shape: sh, root: r, frets: frets };
+    sel = []; ans = false;
+    const valid = frets.filter(f => f >= 0);
+    const minF = Math.min.apply(null, valid);
+    document.getElementById('cp-chord').textContent = r;
+    document.getElementById('cp-hint').textContent = 'forma ' + sh + ' · base na ' + (minF === 0 ? 'posição aberta' : minF + 'ª casa');
+    document.getElementById('cp-fb').textContent = '';
+    document.getElementById('cp-detail').innerHTML = '';
+    document.getElementById('cp-check').style.display = '';
+    document.getElementById('cp-clear').style.display = '';
+    document.getElementById('cp-next').style.display = 'none';
+    render();
+  }
+  function render() {
+    const valid = cur.frets.filter(f => f >= 0);
+    const minF = Math.min.apply(null, valid), maxFt = Math.max.apply(null, valid);
+    const fr = Math.max(0, minF - 1), to = Math.max(maxFt + 1, fr + 5);
+    const dots = sel.map(p => ({ stringIdx: p.stringIdx, fret: p.fret, cls: 'selected' }));
+    cur.frets.forEach((f, i) => { if (f < 0) dots.push({ stringIdx: i, muted: true }); });
+    renderFB({
+      container: document.getElementById('cp-fb-wrap'),
+      fromFret: fr, toFret: to,
+      clickable: !ans,
+      onClick: function(pos) {
+        if (ans) return;
+        const i = sel.findIndex(p => p.stringIdx === pos.stringIdx && p.fret === pos.fret);
+        if (i >= 0) sel.splice(i, 1);
+        else {
+          const same = sel.findIndex(p => p.stringIdx === pos.stringIdx);
+          if (same >= 0) sel.splice(same, 1);
+          sel.push({ stringIdx: pos.stringIdx, fret: pos.fret });
+        }
+        render();
+      },
+      dots: dots
+    });
+  }
+  function check() {
+    ans = true;
+    const exp = {};
+    cur.frets.forEach((f, i) => { if (f >= 0) exp[i] = f; });
+    const got = {};
+    sel.forEach(p => { got[p.stringIdx] = p.fret; });
+    const ek = Object.keys(exp), gk = Object.keys(got);
+    const ok = ek.length === gk.length && ek.every(k => got[k] === exp[k]);
+    const dots = [];
+    for (const k in exp) {
+      const i = +k, f = exp[k];
+      const role = CAGED[cur.shape].roles[i];
+      dots.push({ stringIdx: i, fret: f, cls: got[i] === f ? 'correct' : 'missed', label: role });
+    }
+    for (const k in got) {
+      const i = +k, f = got[k];
+      if (exp[i] !== f) dots.push({ stringIdx: i, fret: f, cls: 'wrong' });
+    }
+    cur.frets.forEach((f, i) => { if (f < 0) dots.push({ stringIdx: i, muted: true }); });
+    const valid = cur.frets.filter(f => f >= 0);
+    const minF = Math.min.apply(null, valid), maxFt = Math.max.apply(null, valid);
+    renderFB({ container: document.getElementById('cp-fb-wrap'), fromFret: Math.max(0, minF - 1), toFret: Math.max(maxFt + 1, minF + 4), dots: dots });
+    const fb = document.getElementById('cp-fb');
+    if (ok) { stats.correct(); fb.textContent = '✓ Acorde correto!'; fb.className = 'feedback success'; }
+    else { stats.wrong(); fb.textContent = '✗ Confira a forma:'; fb.className = 'feedback error'; }
+    document.getElementById('cp-detail').innerHTML = '<strong>' + cur.root + '</strong> · forma <strong>' + cur.shape + '</strong> · verde=ok · laranja=faltou · vermelho=errado';
+    document.getElementById('cp-check').style.display = 'none';
+    document.getElementById('cp-clear').style.display = 'none';
+    document.getElementById('cp-next').style.display = '';
+  }
+  document.getElementById('cp-check').addEventListener('click', check);
+  document.getElementById('cp-clear').addEventListener('click', () => { if (!ans) { sel = []; render(); } });
+  document.getElementById('cp-next').addEventListener('click', next);
+  document.addEventListener('keydown', e => {
+    if (document.querySelector('.panel.active').dataset.panel !== 'caged-play') return;
+    if (e.key === 'Enter') { if (ans) next(); else check(); }
+  });
+  next();
+})();
+</script>
+</body>
+</html>

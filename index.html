@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Treino de Guitarra</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js" integrity="sha384-OIQZlttB2MRaZyoi526rVHiNUGYEq4MAMxDbTkwghmmqxs556T5g5LY926GH7NYM" crossorigin="anonymous"></script>
 <style>
 :root { color-scheme: light; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -80,6 +81,26 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
 .fret-spot.target text, .fret-spot.correct text, .fret-spot.wrong text, .fret-spot.missed text { fill: white; }
 .fret-spot.selected text { fill: #1a1a1a; }
 .footer-tip { text-align: center; font-size: 11px; color: #999; margin-top: 18px; line-height: 1.6; }
+.kb-white {
+  position: absolute; background: white; border: 1.5px solid #ccc;
+  border-radius: 0 0 5px 5px; width: 44px; height: 120px;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 5px; font-size: 9px; font-weight: 700; color: #555;
+  cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: background 0.05s;
+}
+.kb-white:hover { background: #f0f0eb; }
+.kb-white.on { background: #ffd84a; border-color: #e6b800; color: #333; }
+.kb-black {
+  position: absolute; background: #1a1a1a;
+  border-radius: 0 0 4px 4px; width: 28px; height: 75px;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 3px; font-size: 7px; color: #999;
+  cursor: pointer; z-index: 2; user-select: none;
+  transition: background 0.05s;
+}
+.kb-black:hover { background: #333; }
+.kb-black.on { background: #c49b00; color: white; }
 @media (max-width: 600px) {
   .notes-grid { grid-template-columns: repeat(4, 1fr); }
   .stats-bar { grid-template-columns: repeat(2, 1fr); }
@@ -91,13 +112,13 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
 <body>
 <div class="container">
   <h1>🎸 Treino de Guitarra</h1>
-  <p class="subtitle">Tríades, notas no braço e CAGED.</p>
+  <p class="subtitle">Tríades, notas no braço, CAGED e teclado.</p>
   <div class="tabs">
     <button class="tab-btn active" data-tab="triads">Tríades</button>
     <button class="tab-btn" data-tab="notes">Notas no Braço</button>
     <button class="tab-btn" data-tab="find">Encontrar Nota</button>
     <button class="tab-btn" data-tab="caged-id">CAGED: Forma</button>
-    <button class="tab-btn" data-tab="caged-play">CAGED: Tocar</button>
+    <button class="tab-btn" data-tab="keyboard">Teclado</button>
   </div>
 
   <div class="panel active" data-panel="triads">
@@ -238,27 +259,18 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
     <div class="answer-detail" id="ci-detail"></div>
   </div>
 
-  <div class="panel" data-panel="caged-play">
-    <div class="stats-bar">
-      <div class="stat"><div class="stat-value" id="cp-score">0</div><div class="stat-label">Acertos</div></div>
-      <div class="stat"><div class="stat-value" id="cp-total">0</div><div class="stat-label">Total</div></div>
-      <div class="stat"><div class="stat-value" id="cp-streak">0</div><div class="stat-label">Sequência</div></div>
-      <div class="stat"><div class="stat-value" id="cp-best">0</div><div class="stat-label">Recorde</div></div>
+  <div class="panel" data-panel="keyboard">
+    <div class="settings">
+      <div class="settings-row">
+        <span class="settings-label">Extensões opcionais:</span>
+        <div class="toggle" id="kb-oct5">+Oitava 5</div>
+        <div class="toggle" id="kb-oct6">+Oitava 6</div>
+      </div>
     </div>
-    <div class="q-card">
-      <div class="prompt-label">Toque este acorde usando a forma indicada</div>
-      <div class="chord-display" id="cp-chord">G</div>
-      <div class="chord-type" id="cp-hint">forma A · base na casa 10</div>
+    <div class="fretboard-wrap" style="overflow-x:auto;padding:16px;">
+      <div id="kb-container"></div>
     </div>
-    <p class="instruction">Clique nas casas que formam o acorde:</p>
-    <div class="fretboard-wrap" id="cp-fb-wrap"></div>
-    <div class="actions">
-      <button class="btn btn-secondary" id="cp-clear">Limpar</button>
-      <button class="btn btn-primary" id="cp-check">Verificar</button>
-      <button class="btn btn-primary" id="cp-next" style="display:none">Próximo →</button>
-    </div>
-    <div class="feedback" id="cp-fb"></div>
-    <div class="answer-detail" id="cp-detail"></div>
+    <p class="footer-tip">💡 Toque com mouse ou dedo · Amarelo = nota pressionada</p>
   </div>
 
   <p class="footer-tip">
@@ -270,6 +282,38 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
 const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const TUNING = ['E','A','D','G','B','E'];
 function noteAt(s, f) { return NOTES[(NOTES.indexOf(TUNING[s]) + f) % 12]; }
+
+const Audio = {
+  sampler: null,
+  async init() {
+    if (this.sampler) return;
+    await Tone.start();
+    this.sampler = new Tone.Sampler({
+      urls: {
+        A0:'A0.mp3', C1:'C1.mp3', 'D#1':'Ds1.mp3', 'F#1':'Fs1.mp3',
+        A1:'A1.mp3', C2:'C2.mp3', 'D#2':'Ds2.mp3', 'F#2':'Fs2.mp3',
+        A2:'A2.mp3', C3:'C3.mp3', 'D#3':'Ds3.mp3', 'F#3':'Fs3.mp3',
+        A3:'A3.mp3', C4:'C4.mp3', 'D#4':'Ds4.mp3', 'F#4':'Fs4.mp3',
+        A4:'A4.mp3', C5:'C5.mp3', 'D#5':'Ds5.mp3', 'F#5':'Fs5.mp3',
+        A5:'A5.mp3', C6:'C6.mp3', 'D#6':'Ds6.mp3', 'F#6':'Fs6.mp3',
+        A6:'A6.mp3', C7:'C7.mp3', 'D#7':'Ds7.mp3', 'F#7':'Fs7.mp3',
+        A7:'A7.mp3', C8:'C8.mp3'
+      },
+      baseUrl: 'https://tonejs.github.io/audio/salamander/',
+    }).toDestination();
+  },
+  playNote(note, octave) {
+    if (!this.sampler) return;
+    try { this.sampler.triggerAttackRelease(note + octave, '8n'); } catch(e) {}
+  },
+  playChord(notes, octave) {
+    if (!this.sampler) return;
+    notes.forEach(n => { try { this.sampler.triggerAttackRelease(n + octave, '2n'); } catch(e) {} });
+  }
+};
+
+document.addEventListener('click', () => Audio.init(), { once: true });
+document.addEventListener('touchstart', () => Audio.init(), { once: true, passive: true });
 
 const CAGED = {
   E: { frets: [0,2,2,1,0,0], roles: ['R','5','R','3','5','R'], rootStringIdx: 0, rootFretInShape: 0 },
@@ -404,7 +448,7 @@ const TRIADS = {
     b.addEventListener('click', () => {
       if (ans) return;
       if (sel.has(n)) { sel.delete(n); b.classList.remove('selected'); }
-      else if (sel.size < 3) { sel.add(n); b.classList.add('selected'); }
+      else if (sel.size < 3) { sel.add(n); b.classList.add('selected'); Audio.playNote(n, 4); }
       document.getElementById('t-check').disabled = sel.size !== 3;
     });
     grid.appendChild(b);
@@ -446,7 +490,7 @@ const TRIADS = {
       else if (cs.has(n)) b.classList.add('missed');
     });
     const fb = document.getElementById('t-fb');
-    if (ok) { stats.correct(); fb.textContent = '✓ Mandou bem!'; fb.className = 'feedback success'; }
+    if (ok) { stats.correct(); fb.textContent = '✓ Mandou bem!'; fb.className = 'feedback success'; Audio.playChord(cur.notes, 4); }
     else { stats.wrong(); fb.textContent = '✗ Confira a resposta:'; fb.className = 'feedback error'; }
     document.getElementById('t-detail').innerHTML = '<strong>' + cur.root + cur.type.symbol + '</strong> = ' + cur.notes.join(' – ');
     document.getElementById('t-check').style.display = 'none';
@@ -489,7 +533,7 @@ const TRIADS = {
   NOTES.forEach(n => {
     const b = document.createElement('button');
     b.className = 'note-btn'; b.textContent = n; b.dataset.note = n;
-    b.addEventListener('click', () => { if (!ans) answer(n, b); });
+    b.addEventListener('click', () => { if (!ans) { Audio.playNote(n, 4); answer(n, b); } });
     grid.appendChild(b);
   });
   function next() {
@@ -558,6 +602,7 @@ const TRIADS = {
       onClick: function(pos) {
         if (ans) return;
         if (!actStr.has(pos.stringIdx)) return;
+        Audio.playNote(pos.note, 4);
         const i = sel.findIndex(p => p.stringIdx === pos.stringIdx && p.fret === pos.fret);
         if (i >= 0) sel.splice(i, 1);
         else sel.push({ stringIdx: pos.stringIdx, fret: pos.fret });
@@ -664,89 +709,54 @@ const TRIADS = {
   next();
 })();
 
-(function() {
-  const stats = makeStats('cp', 'caged-play-best');
-  let cur = null, sel = [], ans = false;
-  function next() {
-    const shapes = ['C','A','G','E','D'];
-    const sh = shapes[Math.floor(Math.random() * 5)];
-    const r = NOTES[Math.floor(Math.random() * 12)];
-    const frets = applyShape(sh, r);
-    cur = { shape: sh, root: r, frets: frets };
-    sel = []; ans = false;
-    const valid = frets.filter(f => f >= 0);
-    const minF = Math.min.apply(null, valid);
-    document.getElementById('cp-chord').textContent = r;
-    document.getElementById('cp-hint').textContent = 'forma ' + sh + ' · base na ' + (minF === 0 ? 'posição aberta' : minF + 'ª casa');
-    document.getElementById('cp-fb').textContent = '';
-    document.getElementById('cp-detail').innerHTML = '';
-    document.getElementById('cp-check').style.display = '';
-    document.getElementById('cp-clear').style.display = '';
-    document.getElementById('cp-next').style.display = 'none';
-    render();
-  }
-  function render() {
-    const valid = cur.frets.filter(f => f >= 0);
-    const minF = Math.min.apply(null, valid), maxFt = Math.max.apply(null, valid);
-    const fr = Math.max(0, minF - 1), to = Math.max(maxFt + 1, fr + 5);
-    const dots = sel.map(p => ({ stringIdx: p.stringIdx, fret: p.fret, cls: 'selected' }));
-    cur.frets.forEach((f, i) => { if (f < 0) dots.push({ stringIdx: i, muted: true }); });
-    renderFB({
-      container: document.getElementById('cp-fb-wrap'),
-      fromFret: fr, toFret: to,
-      clickable: !ans,
-      onClick: function(pos) {
-        if (ans) return;
-        const i = sel.findIndex(p => p.stringIdx === pos.stringIdx && p.fret === pos.fret);
-        if (i >= 0) sel.splice(i, 1);
-        else {
-          const same = sel.findIndex(p => p.stringIdx === pos.stringIdx);
-          if (same >= 0) sel.splice(same, 1);
-          sel.push({ stringIdx: pos.stringIdx, fret: pos.fret });
-        }
-        render();
-      },
-      dots: dots
+function kbPress(el) {
+  el.classList.add('on');
+  Audio.playNote(el.dataset.note, +el.dataset.oct);
+}
+function kbRelease(el) {
+  el.classList.remove('on');
+}
+function kbTouchStart(e, el) {
+  e.preventDefault();
+  kbPress(el);
+}
+
+function renderKeyboard(fromOct, toOct) {
+  const container = document.getElementById('kb-container');
+  const STEP = 45, WHITE_H = 120, BLACK_W = 28, BLACK_H = 75;
+  const BK = [{n:'C#',x:30},{n:'D#',x:76},{n:'F#',x:166},{n:'G#',x:211},{n:'A#',x:256}];
+  const WN = ['C','D','E','F','G','A','B'];
+  const totalW = (toOct - fromOct + 1) * 7 * STEP;
+  let h = '<div style="position:relative;height:' + (WHITE_H + 2) + 'px;width:' + totalW + 'px;">';
+  for (let oct = fromOct; oct <= toOct; oct++) {
+    const base = (oct - fromOct) * 7 * STEP;
+    WN.forEach((n, i) => {
+      h += '<div class="kb-white" style="left:' + (base + i * STEP) + 'px;" data-note="' + n + '" data-oct="' + oct + '" onmousedown="kbPress(this)" onmouseup="kbRelease(this)" onmouseleave="kbRelease(this)" ontouchstart="kbTouchStart(event,this)" ontouchend="kbRelease(this)">' + n + oct + '</div>';
+    });
+    BK.forEach(bk => {
+      h += '<div class="kb-black" style="left:' + (base + bk.x) + 'px;" data-note="' + bk.n + '" data-oct="' + oct + '" onmousedown="kbPress(this)" onmouseup="kbRelease(this)" onmouseleave="kbRelease(this)" ontouchstart="kbTouchStart(event,this)" ontouchend="kbRelease(this)">' + bk.n + oct + '</div>';
     });
   }
-  function check() {
-    ans = true;
-    const exp = {};
-    cur.frets.forEach((f, i) => { if (f >= 0) exp[i] = f; });
-    const got = {};
-    sel.forEach(p => { got[p.stringIdx] = p.fret; });
-    const ek = Object.keys(exp), gk = Object.keys(got);
-    const ok = ek.length === gk.length && ek.every(k => got[k] === exp[k]);
-    const dots = [];
-    for (const k in exp) {
-      const i = +k, f = exp[k];
-      const role = CAGED[cur.shape].roles[i];
-      dots.push({ stringIdx: i, fret: f, cls: got[i] === f ? 'correct' : 'missed', label: role });
-    }
-    for (const k in got) {
-      const i = +k, f = got[k];
-      if (exp[i] !== f) dots.push({ stringIdx: i, fret: f, cls: 'wrong' });
-    }
-    cur.frets.forEach((f, i) => { if (f < 0) dots.push({ stringIdx: i, muted: true }); });
-    const valid = cur.frets.filter(f => f >= 0);
-    const minF = Math.min.apply(null, valid), maxFt = Math.max.apply(null, valid);
-    renderFB({ container: document.getElementById('cp-fb-wrap'), fromFret: Math.max(0, minF - 1), toFret: Math.max(maxFt + 1, minF + 4), dots: dots });
-    const fb = document.getElementById('cp-fb');
-    if (ok) { stats.correct(); fb.textContent = '✓ Acorde correto!'; fb.className = 'feedback success'; }
-    else { stats.wrong(); fb.textContent = '✗ Confira a forma:'; fb.className = 'feedback error'; }
-    document.getElementById('cp-detail').innerHTML = '<strong>' + cur.root + '</strong> · forma <strong>' + cur.shape + '</strong> · verde=ok · laranja=faltou · vermelho=errado';
-    document.getElementById('cp-check').style.display = 'none';
-    document.getElementById('cp-clear').style.display = 'none';
-    document.getElementById('cp-next').style.display = '';
-  }
-  document.getElementById('cp-check').addEventListener('click', check);
-  document.getElementById('cp-clear').addEventListener('click', () => { if (!ans) { sel = []; render(); } });
-  document.getElementById('cp-next').addEventListener('click', next);
-  document.addEventListener('keydown', e => {
-    if (document.querySelector('.panel.active').dataset.panel !== 'caged-play') return;
-    if (e.key === 'Enter') { if (ans) next(); else check(); }
+  h += '</div>';
+  container.innerHTML = h;
+}
+
+(function() {
+  let oct5 = false, oct6 = false;
+  function rebuild() { renderKeyboard(1, oct6 ? 6 : oct5 ? 5 : 4); }
+  document.getElementById('kb-oct5').addEventListener('click', function() {
+    oct5 = !oct5;
+    if (!oct5) { oct6 = false; document.getElementById('kb-oct6').classList.remove('active'); }
+    this.classList.toggle('active', oct5);
+    rebuild();
   });
-  next();
+  document.getElementById('kb-oct6').addEventListener('click', function() {
+    if (!oct5) { oct5 = true; document.getElementById('kb-oct5').classList.add('active'); }
+    oct6 = !oct6;
+    this.classList.toggle('active', oct6);
+    rebuild();
+  });
+  rebuild();
 })();
 </script>
 </body>

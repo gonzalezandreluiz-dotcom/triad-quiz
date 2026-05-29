@@ -491,10 +491,10 @@ const TRIADS = {
   NOTES.forEach(n => {
     const b = document.createElement('button');
     b.className = 'note-btn'; b.textContent = n; b.dataset.note = n;
-    b.addEventListener('click', () => {
+    b.addEventListener('click', async () => {
       if (ans) return;
       if (sel.has(n)) { sel.delete(n); b.classList.remove('selected'); }
-      else if (sel.size < 3) { sel.add(n); b.classList.add('selected'); Audio.playNote(n, 4); }
+      else if (sel.size < 3) { sel.add(n); b.classList.add('selected'); await Audio.init(); Audio.playNote(n, 4); }
       document.getElementById('t-check').disabled = sel.size !== 3;
     });
     grid.appendChild(b);
@@ -536,7 +536,7 @@ const TRIADS = {
       else if (cs.has(n)) b.classList.add('missed');
     });
     const fb = document.getElementById('t-fb');
-    if (ok) { stats.correct(); fb.textContent = '✓ Mandou bem!'; fb.className = 'feedback success'; Audio.playChord(cur.notes, 4); }
+    if (ok) { stats.correct(); fb.textContent = '✓ Mandou bem!'; fb.className = 'feedback success'; Audio.init().then(() => Audio.playChord(cur.notes, 4)); }
     else { stats.wrong(); fb.textContent = '✗ Confira a resposta:'; fb.className = 'feedback error'; }
     document.getElementById('t-detail').innerHTML = '<strong>' + cur.root + cur.type.symbol + '</strong> = ' + cur.notes.join(' – ');
     document.getElementById('t-check').style.display = 'none';
@@ -579,7 +579,7 @@ const TRIADS = {
   NOTES.forEach(n => {
     const b = document.createElement('button');
     b.className = 'note-btn'; b.textContent = n; b.dataset.note = n;
-    b.addEventListener('click', () => { if (!ans) { Audio.playNote(n, 4); answer(n, b); } });
+    b.addEventListener('click', async () => { if (!ans) { await Audio.init(); Audio.playNote(n, 4); answer(n, b); } });
     grid.appendChild(b);
   });
   function next() {
@@ -645,10 +645,10 @@ const TRIADS = {
       container: document.getElementById('f-fb-wrap'),
       fromFret: 0, toFret: maxF,
       clickable: !ans,
-      onClick: function(pos) {
+      onClick: async function(pos) {
         if (ans) return;
         if (!actStr.has(pos.stringIdx)) return;
-        Audio.playNote(pos.note, 4);
+        await Audio.init(); Audio.playNote(pos.note, 4);
         const i = sel.findIndex(p => p.stringIdx === pos.stringIdx && p.fret === pos.fret);
         if (i >= 0) sel.splice(i, 1);
         else sel.push({ stringIdx: pos.stringIdx, fret: pos.fret });

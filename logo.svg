@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 130" width="400" height="130">
+  <!-- Guitar neck -->
+  <rect x="88" y="4" width="11" height="46" rx="3" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+  <!-- Nut -->
+  <rect x="86" y="11" width="15" height="3" rx="1" fill="#1a1a1a"/>
+  <!-- Headstock -->
+  <rect x="85" y="4" width="17" height="12" rx="3" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+  <!-- Tuning pegs left -->
+  <rect x="79" y="6"  width="8" height="4" rx="2" fill="#1a1a1a"/>
+  <rect x="79" y="13" width="8" height="4" rx="2" fill="#1a1a1a"/>
+  <!-- Tuning pegs right -->
+  <rect x="100" y="6"  width="8" height="4" rx="2" fill="#1a1a1a"/>
+  <rect x="100" y="13" width="8" height="4" rx="2" fill="#1a1a1a"/>
+
+  <!-- Guitar body — double-bout outline using bezier curves -->
+  <path d="
+    M88,50
+    C78,50 64,54 62,67
+    C60,78 66,84 72,88
+    C65,93 59,101 60,112
+    C61,124 72,130 93.5,130
+    C115,130 126,124 127,112
+    C128,101 122,93 115,88
+    C121,84 127,78 125,67
+    C123,54 109,50 99,50 Z
+  " fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Sound hole -->
+  <circle cx="93.5" cy="95" r="11" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+
+  <!-- Bridge -->
+  <rect x="83" y="114" width="21" height="5" rx="2" fill="#1a1a1a" opacity="0.7"/>
+
+  <!-- Strings (6) — subtle -->
+  <line x1="89"  y1="14" x2="83"  y2="114" stroke="#1a1a1a" stroke-width="0.7" opacity="0.3"/>
+  <line x1="91"  y1="14" x2="85"  y2="114" stroke="#1a1a1a" stroke-width="0.7" opacity="0.3"/>
+  <line x1="93"  y1="14" x2="88"  y2="114" stroke="#1a1a1a" stroke-width="0.7" opacity="0.3"/>
+  <line x1="95"  y1="14" x2="96"  y2="114" stroke="#1a1a1a" stroke-width="0.7" opacity="0.3"/>
+  <line x1="97"  y1="14" x2="101" y2="114" stroke="#1a1a1a" stroke-width="0.7" opacity="0.3"/>
+  <line x1="99"  y1="14" x2="104" y2="114" stroke="#1a1a1a" stroke-width="0.7" opacity="0.3"/>
+
+  <!-- Music staff — 5 lines curving from guitar -->
+  <path d="M127,74 C148,70 165,65 192,58" fill="none" stroke="#1a1a1a" stroke-width="1.2"/>
+  <path d="M127,78 C148,74 165,69 192,62" fill="none" stroke="#1a1a1a" stroke-width="1.2"/>
+  <path d="M127,82 C148,78 165,73 192,66" fill="none" stroke="#1a1a1a" stroke-width="1.2"/>
+  <path d="M127,86 C148,82 165,77 192,70" fill="none" stroke="#1a1a1a" stroke-width="1.2"/>
+  <path d="M127,90 C148,86 165,81 192,74" fill="none" stroke="#1a1a1a" stroke-width="1.2"/>
+
+  <!-- Note 1 (filled, on staff) -->
+  <ellipse cx="148" cy="72" rx="5.5" ry="4" transform="rotate(-18 148 72)" fill="#1a1a1a"/>
+  <line x1="153.2" y1="69" x2="153.2" y2="52" stroke="#1a1a1a" stroke-width="1.8"/>
+
+  <!-- Note 2 (filled) -->
+  <ellipse cx="167" cy="67" rx="5.5" ry="4" transform="rotate(-18 167 67)" fill="#1a1a1a"/>
+  <line x1="172.2" y1="64" x2="172.2" y2="47" stroke="#1a1a1a" stroke-width="1.8"/>
+
+  <!-- Note 3 (open/hollow) -->
+  <ellipse cx="183" cy="62" rx="5.5" ry="4" transform="rotate(-18 183 62)" fill="none" stroke="#1a1a1a" stroke-width="1.8"/>
+  <line x1="188.2" y1="59" x2="188.2" y2="42" stroke="#1a1a1a" stroke-width="1.8"/>
+
+  <!-- Note 4 (filled, lower) -->
+  <ellipse cx="197" cy="71" rx="5.5" ry="4" transform="rotate(-18 197 71)" fill="#1a1a1a"/>
+  <line x1="191.8" y1="68" x2="191.8" y2="51" stroke="#1a1a1a" stroke-width="1.8"/>
+
+  <!-- Text "Inspir" white/dark + "Arte" red -->
+  <text x="4"   y="128" font-family="'Arial Black','Helvetica Neue',Arial,sans-serif" font-size="48" font-weight="900" letter-spacing="-1" fill="#1a1a1a">Inspir</text>
+  <text x="171" y="128" font-family="'Arial Black','Helvetica Neue',Arial,sans-serif" font-size="48" font-weight="900" letter-spacing="-1" fill="#c8000a">Arte</text>
+</svg>

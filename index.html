@@ -42,13 +42,6 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
 .note-btn.wrong { background: #ffcdd2; border-color: #e53935; color: #b71c1c; }
 .note-btn.missed { background: #fff3cd; border-color: #ffa726; color: #6d4c00; }
 .note-btn:disabled { cursor: default; }
-.caged-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-bottom: 14px; }
-.caged-btn { padding: 16px 4px; border: 1.5px solid #ddd; border-radius: 9px; background: white; cursor: pointer; font-size: 18px; font-weight: 700; color: #333; transition: all 0.12s; user-select: none; }
-.caged-btn:hover:not(:disabled) { border-color: #1a1a1a; transform: translateY(-1px); }
-.caged-btn.selected { background: #ffd84a; border-color: #e6b800; }
-.caged-btn.correct { background: #c8e6c9; border-color: #4caf50; color: #1b5e20; }
-.caged-btn.wrong { background: #ffcdd2; border-color: #e53935; color: #b71c1c; }
-.caged-btn:disabled { cursor: default; }
 .actions { display: flex; gap: 10px; justify-content: center; margin-bottom: 8px; flex-wrap: wrap; }
 .btn { padding: 11px 22px; border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
 .btn-primary { background: #1a1a1a; color: white; }
@@ -101,24 +94,62 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
 }
 .kb-black:hover { background: #333; }
 .kb-black.on { background: #c49b00; color: white; }
+
+/* Mapa do Campo Harmônico */
+.hf-block { background: white; border: 1px solid #e5e5e0; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+.hf-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.scale-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.scale-card { flex-shrink: 0; width: 78px; background: #fafaf7; border: 1.5px solid #e5e5e0; border-radius: 10px; padding: 10px 6px; text-align: center; transition: border-color 0.15s, background 0.15s; }
+.scale-card-note { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.scale-card-play { display: block; width: 100%; padding: 4px 0; border: 1px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-size: 11px; color: #666; margin-bottom: 6px; }
+.scale-card-play:hover { background: #f0f0eb; }
+.scale-card select { width: 100%; border: 1.5px solid #ddd; border-radius: 6px; padding: 3px 2px; font-size: 13px; font-weight: 700; text-align: center; background: white; }
+.scale-card.correct { border-color: #4caf50; background: #f1f8f1; }
+.scale-card.wrong { border-color: #e53935; background: #fff8f8; }
+.chord-slots { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.chord-slot { flex: 1; min-width: 72px; min-height: 68px; background: #fafaf7; border: 2px dashed #ccc; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 6px 4px 6px; transition: background 0.1s, border-color 0.1s; }
+.chord-slot-label { font-size: 10px; font-weight: 700; color: #bbb; margin-bottom: 4px; }
+.chord-slot.drag-over { background: #f0f0eb; border-color: #888; }
+.chord-slot.correct { border-style: solid; border-color: #4caf50; background: #f1f8f1; }
+.chord-slot.correct .chord-slot-label { color: #4caf50; }
+.chord-slot.wrong { border-style: solid; border-color: #e53935; background: #fff8f8; }
+.chord-slot.wrong .chord-slot-label { color: #e53935; }
+.pill-pool { display: flex; gap: 8px; flex-wrap: wrap; min-height: 50px; background: #f0f0eb; border-radius: 10px; padding: 8px; }
+.chord-pill { padding: 9px 16px; background: white; border: 1.5px solid #ddd; border-radius: 20px; cursor: grab; font-size: 14px; font-weight: 700; user-select: none; transition: transform 0.1s, border-color 0.1s; white-space: nowrap; }
+.chord-pill:hover { border-color: #999; transform: translateY(-1px); }
+.chord-pill.dragging { opacity: 0.3; }
+.note-chord-row { margin-bottom: 16px; }
+.note-chord-header { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #444; }
+.note-slots { display: flex; gap: 8px; margin-bottom: 6px; }
+.note-slot { width: 54px; height: 48px; background: #fafaf7; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; transition: background 0.1s, border-color 0.1s; }
+.note-slot.drag-over { background: #f0f0eb; border-color: #888; }
+.note-slot.correct { border-style: solid; border-color: #4caf50; background: #f1f8f1; color: #2e7d32; }
+.note-slot.wrong { border-style: solid; border-color: #e53935; background: #fff8f8; color: #c62828; }
+.note-pill { padding: 7px 13px; background: white; border: 1.5px solid #ddd; border-radius: 14px; cursor: grab; font-size: 13px; font-weight: 600; user-select: none; display: inline-block; transition: border-color 0.1s; }
+.note-pill:hover { border-color: #999; }
+.note-pill.dragging { opacity: 0.3; }
+
 @media (max-width: 600px) {
   .notes-grid { grid-template-columns: repeat(4, 1fr); }
   .stats-bar { grid-template-columns: repeat(2, 1fr); }
   .chord-display { font-size: 38px; }
   h1 { font-size: 22px; }
+  .scale-card { width: 66px; }
 }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>🎸 Treino de Guitarra</h1>
-  <p class="subtitle">Tríades, notas no braço, CAGED e teclado.</p>
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+    <img src="logo.svg" alt="InspirArte" style="height:72px;display:block;">
+    <p class="subtitle" style="margin:0;">Tríades, notas no braço, teclado e campo harmônico.</p>
+  </div>
   <div class="tabs">
     <button class="tab-btn active" data-tab="triads">Tríades</button>
     <button class="tab-btn" data-tab="notes">Notas no Braço</button>
     <button class="tab-btn" data-tab="find">Encontrar Nota</button>
-    <button class="tab-btn" data-tab="caged-id">CAGED: Forma</button>
     <button class="tab-btn" data-tab="keyboard">Teclado</button>
+    <button class="tab-btn" data-tab="harmonic">Mapa Harmônico</button>
   </div>
 
   <div class="panel active" data-panel="triads">
@@ -231,34 +262,6 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
     <div class="feedback" id="f-fb"></div>
   </div>
 
-  <div class="panel" data-panel="caged-id">
-    <div class="stats-bar">
-      <div class="stat"><div class="stat-value" id="ci-score">0</div><div class="stat-label">Acertos</div></div>
-      <div class="stat"><div class="stat-value" id="ci-total">0</div><div class="stat-label">Total</div></div>
-      <div class="stat"><div class="stat-value" id="ci-streak">0</div><div class="stat-label">Sequência</div></div>
-      <div class="stat"><div class="stat-value" id="ci-best">0</div><div class="stat-label">Recorde</div></div>
-    </div>
-    <div class="q-card">
-      <div class="prompt-label">Qual forma CAGED é essa?</div>
-      <div class="chord-display" id="ci-chord">G</div>
-      <div class="chord-type" id="ci-hint">nessa posição</div>
-    </div>
-    <div class="fretboard-wrap" id="ci-fb-wrap"></div>
-    <p class="instruction">Escolha a forma:</p>
-    <div class="caged-grid">
-      <button class="caged-btn" data-shape="C">C</button>
-      <button class="caged-btn" data-shape="A">A</button>
-      <button class="caged-btn" data-shape="G">G</button>
-      <button class="caged-btn" data-shape="E">E</button>
-      <button class="caged-btn" data-shape="D">D</button>
-    </div>
-    <div class="actions">
-      <button class="btn btn-primary" id="ci-next" style="display:none">Próximo →</button>
-    </div>
-    <div class="feedback" id="ci-fb"></div>
-    <div class="answer-detail" id="ci-detail"></div>
-  </div>
-
   <div class="panel" data-panel="keyboard">
     <div class="settings">
       <div class="settings-row">
@@ -271,6 +274,56 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
       <div id="kb-container"></div>
     </div>
     <p class="footer-tip">💡 Toque com mouse ou dedo · Amarelo = nota pressionada</p>
+  </div>
+
+  <!-- Mapa do Campo Harmônico -->
+  <div class="panel" data-panel="harmonic">
+    <div class="settings">
+      <div class="settings-row">
+        <span class="settings-label">Tônica:</span>
+        <div class="toggle active" data-hmroot="C">C</div>
+        <div class="toggle" data-hmroot="C#">C#</div>
+        <div class="toggle" data-hmroot="D">D</div>
+        <div class="toggle" data-hmroot="D#">D#</div>
+        <div class="toggle" data-hmroot="E">E</div>
+        <div class="toggle" data-hmroot="F">F</div>
+        <div class="toggle" data-hmroot="F#">F#</div>
+        <div class="toggle" data-hmroot="G">G</div>
+        <div class="toggle" data-hmroot="G#">G#</div>
+        <div class="toggle" data-hmroot="A">A</div>
+        <div class="toggle" data-hmroot="A#">A#</div>
+        <div class="toggle" data-hmroot="B">B</div>
+      </div>
+    </div>
+
+    <!-- Seção 1: Escala Diatônica -->
+    <div class="hf-block">
+      <div class="hf-title">Escala Diatônica — Identifique os Graus</div>
+      <div class="scale-row" id="hm-scale-row"></div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn btn-secondary" id="hm-scale-reset">Limpar</button>
+        <button class="btn btn-primary" id="hm-scale-check">Verificar</button>
+      </div>
+      <div class="feedback" id="hm-scale-fb"></div>
+    </div>
+
+    <!-- Seção 2: Campo Harmônico — ordenar acordes -->
+    <div class="hf-block">
+      <div class="hf-title">Campo Harmônico — Arraste os Acordes para o Grau Certo</div>
+      <div class="chord-slots" id="hm-chord-slots"></div>
+      <div class="pill-pool" id="hm-chord-pool"></div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn btn-secondary" id="hm-chord-reset">Limpar</button>
+        <button class="btn btn-primary" id="hm-chord-check">Verificar</button>
+      </div>
+      <div class="feedback" id="hm-chord-fb"></div>
+    </div>
+
+    <!-- Seção 3: Notas de cada acorde -->
+    <div class="hf-block">
+      <div class="hf-title">Notas de Cada Acorde — Arraste as Notas</div>
+      <div id="hm-notes-container"></div>
+    </div>
   </div>
 
   <p class="footer-tip">
@@ -325,24 +378,6 @@ const Audio = {
 
 document.addEventListener('click', () => Audio.init(), { once: true });
 document.addEventListener('touchstart', () => Audio.init(), { once: true, passive: true });
-
-const CAGED = {
-  E: { frets: [0,2,2,1,0,0], roles: ['R','5','R','3','5','R'], rootStringIdx: 0, rootFretInShape: 0 },
-  D: { frets: [-1,-1,0,2,3,2], roles: [null,null,'R','5','R','3'], rootStringIdx: 2, rootFretInShape: 0 },
-  C: { frets: [-1,3,2,0,1,0], roles: [null,'R','3','5','R','3'], rootStringIdx: 1, rootFretInShape: 3 },
-  A: { frets: [-1,0,2,2,2,0], roles: [null,'R','5','R','3','5'], rootStringIdx: 1, rootFretInShape: 0 },
-  G: { frets: [3,2,0,0,0,3], roles: ['R','3','5','R','3','R'], rootStringIdx: 0, rootFretInShape: 3 }
-};
-
-function applyShape(shape, rootNote) {
-  const s = CAGED[shape];
-  const ti = NOTES.indexOf(rootNote);
-  const oi = NOTES.indexOf(TUNING[s.rootStringIdx]);
-  const rsf = (ti - oi + 12) % 12;
-  let off = rsf - s.rootFretInShape;
-  if (off < 0) off += 12;
-  return s.frets.map(f => f === -1 ? -1 : f + off);
-}
 
 document.querySelectorAll('.tab-btn').forEach(b => {
   b.addEventListener('click', () => {
@@ -672,54 +707,6 @@ const TRIADS = {
   next();
 })();
 
-(function() {
-  const stats = makeStats('ci', 'caged-id-best');
-  let cur = null, ans = false;
-  function next() {
-    const shapes = ['C','A','G','E','D'];
-    const sh = shapes[Math.floor(Math.random() * 5)];
-    const r = NOTES[Math.floor(Math.random() * 12)];
-    const frets = applyShape(sh, r);
-    cur = { shape: sh, root: r, frets: frets };
-    document.getElementById('ci-chord').textContent = r;
-    const valid = frets.filter(f => f >= 0);
-    const minF = Math.min.apply(null, valid);
-    document.getElementById('ci-hint').textContent = 'tocado na ' + (minF === 0 ? 'posição aberta' : minF + 'ª casa');
-    ans = false;
-    document.querySelectorAll('.caged-btn').forEach(b => { b.className = 'caged-btn'; b.disabled = false; });
-    document.getElementById('ci-next').style.display = 'none';
-    document.getElementById('ci-fb').textContent = '';
-    document.getElementById('ci-detail').innerHTML = '';
-    const maxFt = Math.max.apply(null, valid);
-    const fr = Math.max(0, minF - 1), to = Math.max(maxFt + 1, fr + 5);
-    const dots = [];
-    frets.forEach((f, i) => {
-      if (f < 0) { dots.push({ stringIdx: i, muted: true }); return; }
-      dots.push({ stringIdx: i, fret: f, cls: CAGED[sh].roles[i] === 'R' ? 'correct' : 'target', label: CAGED[sh].roles[i] });
-    });
-    renderFB({ container: document.getElementById('ci-fb-wrap'), fromFret: fr, toFret: to, dots: dots });
-  }
-  document.querySelectorAll('.caged-btn').forEach(b => {
-    b.addEventListener('click', () => {
-      if (ans) return;
-      ans = true;
-      document.querySelectorAll('.caged-btn').forEach(x => x.disabled = true);
-      const p = b.dataset.shape;
-      const fb = document.getElementById('ci-fb');
-      if (p === cur.shape) { stats.correct(); b.classList.add('correct'); fb.textContent = '✓ Isso!'; fb.className = 'feedback success'; }
-      else { stats.wrong(); b.classList.add('wrong'); document.querySelector('.caged-btn[data-shape="' + cur.shape + '"]').classList.add('correct'); fb.textContent = '✗ Era forma ' + cur.shape; fb.className = 'feedback error'; }
-      document.getElementById('ci-detail').innerHTML = '<strong>' + cur.root + '</strong> com forma <strong>' + cur.shape + '</strong> · verde=tônica(R), preto=3ª/5ª';
-      document.getElementById('ci-next').style.display = '';
-    });
-  });
-  document.getElementById('ci-next').addEventListener('click', next);
-  document.addEventListener('keydown', e => {
-    if (document.querySelector('.panel.active').dataset.panel !== 'caged-id') return;
-    if (e.key === 'Enter' && ans) next();
-  });
-  next();
-})();
-
 function kbPress(el) {
   el.classList.add('on');
   Audio.playNote(el.dataset.note, +el.dataset.oct, 'piano');
@@ -768,6 +755,313 @@ function renderKeyboard(fromOct, toOct) {
     rebuild();
   });
   rebuild();
+})();
+
+/* ── Mapa do Campo Harmônico ─────────────────────────────────────── */
+(function() {
+  const MAJOR_IVLS = [0,2,4,5,7,9,11];
+  const CHORD_TYPES = ['maj','min','min','maj','maj','min','dim'];
+  const CHORD_SYM = {maj:'', min:'m', dim:'°'};
+  const DEGREES = ['I','II','III','IV','V','VI','VII'];
+  const CHORD_IVLS = {maj:[0,4,7], min:[0,3,7], dim:[0,3,6]};
+
+  let hmRoot = 'C';
+  let dragSrc = null;
+
+  function getScale(root) {
+    const ri = NOTES.indexOf(root);
+    return MAJOR_IVLS.map(i => NOTES[(ri + i) % 12]);
+  }
+
+  function getChordNotes(scale, di) {
+    const ni = NOTES.indexOf(scale[di]);
+    return CHORD_IVLS[CHORD_TYPES[di]].map(i => NOTES[(ni + i) % 12]);
+  }
+
+  function chordName(scale, di) {
+    return scale[di] + CHORD_SYM[CHORD_TYPES[di]];
+  }
+
+  /* ── Seção 1: Graus da Escala ── */
+  function buildScale() {
+    const sn = getScale(hmRoot);
+    const row = document.getElementById('hm-scale-row');
+    row.innerHTML = '';
+    sn.forEach((note, i) => {
+      const card = document.createElement('div');
+      card.className = 'scale-card';
+      card.dataset.idx = i;
+      const opts = DEGREES.map(d => '<option value="' + d + '">' + d + '</option>').join('');
+      card.innerHTML =
+        '<div class="scale-card-note">' + note + '</div>' +
+        '<button class="scale-card-play">▶ ouvir</button>' +
+        '<select><option value="">—</option>' + opts + '</select>';
+      card.querySelector('.scale-card-play').addEventListener('click', async function() {
+        await Audio.init();
+        Audio.playNote(note, 4);
+      });
+      row.appendChild(card);
+    });
+    document.getElementById('hm-scale-fb').textContent = '';
+  }
+
+  document.getElementById('hm-scale-check').addEventListener('click', () => {
+    const cards = document.querySelectorAll('#hm-scale-row .scale-card');
+    let ok = true;
+    cards.forEach((card, i) => {
+      const v = card.querySelector('select').value;
+      card.classList.remove('correct','wrong');
+      if (!v) { ok = false; return; }
+      if (v === DEGREES[i]) card.classList.add('correct');
+      else { card.classList.add('wrong'); ok = false; }
+    });
+    const fb = document.getElementById('hm-scale-fb');
+    fb.className = 'feedback ' + (ok ? 'success' : 'error');
+    fb.textContent = ok ? '✓ Todos os graus corretos!' : 'Verifique os graus em vermelho.';
+  });
+
+  document.getElementById('hm-scale-reset').addEventListener('click', () => {
+    document.querySelectorAll('#hm-scale-row .scale-card').forEach(c => {
+      c.classList.remove('correct','wrong');
+      c.querySelector('select').value = '';
+    });
+    document.getElementById('hm-scale-fb').textContent = '';
+  });
+
+  /* ── Seção 2: Ordenar acordes ── */
+  let chordZones = new Array(7).fill(null);
+  let chordShuffled = [];
+
+  function buildChords() {
+    chordZones = new Array(7).fill(null);
+    chordShuffled = [...Array(7).keys()].sort(() => Math.random() - 0.5);
+    renderChordSlots();
+    renderChordPool();
+    const fb = document.getElementById('hm-chord-fb');
+    fb.textContent = '';
+    fb.className = 'feedback';
+  }
+
+  function renderChordSlots() {
+    const sn = getScale(hmRoot);
+    const cont = document.getElementById('hm-chord-slots');
+    cont.innerHTML = '';
+    DEGREES.forEach((deg, zi) => {
+      const slot = document.createElement('div');
+      slot.className = 'chord-slot';
+      slot.dataset.zone = zi;
+      const lbl = document.createElement('div');
+      lbl.className = 'chord-slot-label';
+      lbl.textContent = deg;
+      slot.appendChild(lbl);
+
+      const di = chordZones[zi];
+      if (di !== null) slot.appendChild(makeChordPill(sn, di, zi));
+
+      slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drag-over'); });
+      slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+      slot.addEventListener('drop', e => {
+        e.preventDefault();
+        slot.classList.remove('drag-over');
+        if (!dragSrc || dragSrc.kind !== 'chord') return;
+        if (dragSrc.fromZone !== null) chordZones[dragSrc.fromZone] = null;
+        chordZones[zi] = dragSrc.di;
+        renderChordSlots();
+        renderChordPool();
+      });
+      cont.appendChild(slot);
+    });
+  }
+
+  function renderChordPool() {
+    const sn = getScale(hmRoot);
+    const pool = document.getElementById('hm-chord-pool');
+    pool.innerHTML = '';
+    const placed = new Set(chordZones.filter(x => x !== null));
+    chordShuffled.forEach(di => {
+      if (placed.has(di)) return;
+      pool.appendChild(makeChordPill(sn, di, null));
+    });
+  }
+
+  function makeChordPill(sn, di, fromZone) {
+    const pill = document.createElement('div');
+    pill.className = 'chord-pill';
+    pill.textContent = chordName(sn, di);
+    pill.draggable = true;
+    pill.addEventListener('dragstart', () => {
+      dragSrc = { kind: 'chord', di, fromZone };
+      setTimeout(() => pill.classList.add('dragging'), 0);
+    });
+    pill.addEventListener('dragend', () => pill.classList.remove('dragging'));
+    return pill;
+  }
+
+  document.getElementById('hm-chord-check').addEventListener('click', () => {
+    const slots = document.querySelectorAll('#hm-chord-slots .chord-slot');
+    let ok = true;
+    slots.forEach((slot, zi) => {
+      slot.classList.remove('correct','wrong');
+      const di = chordZones[zi];
+      if (di === null) { ok = false; return; }
+      if (di === zi) slot.classList.add('correct');
+      else { slot.classList.add('wrong'); ok = false; }
+    });
+    const fb = document.getElementById('hm-chord-fb');
+    fb.className = 'feedback ' + (ok ? 'success' : 'error');
+    fb.textContent = ok ? '✓ Campo harmônico correto!' : 'Verifique os acordes em vermelho.';
+  });
+
+  document.getElementById('hm-chord-reset').addEventListener('click', buildChords);
+
+  /* ── Seção 3: Notas de cada acorde ── */
+  let noteZones = [];
+  let notePools = [];
+
+  function buildNotes() {
+    const sn = getScale(hmRoot);
+    noteZones = Array.from({length:7}, () => [null,null,null]);
+    notePools = sn.map((_, di) => [...getChordNotes(sn, di)].sort(() => Math.random() - 0.5));
+
+    const cont = document.getElementById('hm-notes-container');
+    cont.innerHTML = '';
+
+    sn.forEach((_, di) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'note-chord-row';
+
+      const hdr = document.createElement('div');
+      hdr.className = 'note-chord-header';
+      hdr.textContent = DEGREES[di] + ' — ' + chordName(sn, di);
+      wrap.appendChild(hdr);
+
+      const slotsDiv = document.createElement('div');
+      slotsDiv.className = 'note-slots';
+      slotsDiv.id = 'hm-nslots-' + di;
+      for (let slot = 0; slot < 3; slot++) {
+        const sz = document.createElement('div');
+        sz.className = 'note-slot';
+        sz.dataset.di = di;
+        sz.dataset.slot = slot;
+        sz.addEventListener('dragover', e => { e.preventDefault(); sz.classList.add('drag-over'); });
+        sz.addEventListener('dragleave', () => sz.classList.remove('drag-over'));
+        sz.addEventListener('drop', e => {
+          e.preventDefault();
+          sz.classList.remove('drag-over');
+          if (!dragSrc || dragSrc.kind !== 'note' || +dragSrc.di !== di) return;
+          if (dragSrc.fromSlot !== null) noteZones[di][dragSrc.fromSlot] = null;
+          noteZones[di][slot] = dragSrc.note;
+          renderNoteRow(di);
+        });
+        slotsDiv.appendChild(sz);
+      }
+      wrap.appendChild(slotsDiv);
+
+      const poolDiv = document.createElement('div');
+      poolDiv.className = 'pill-pool';
+      poolDiv.style.marginBottom = '8px';
+      poolDiv.id = 'hm-npool-' + di;
+      wrap.appendChild(poolDiv);
+
+      const vrow = document.createElement('div');
+      vrow.style.cssText = 'display:flex;gap:8px;align-items:center;';
+      const vbtn = document.createElement('button');
+      vbtn.className = 'btn btn-primary';
+      vbtn.style.cssText = 'padding:6px 14px;font-size:12px;';
+      vbtn.textContent = 'Verificar';
+      vbtn.addEventListener('click', () => verifyNotes(di));
+      const vfb = document.createElement('span');
+      vfb.className = 'feedback';
+      vfb.id = 'hm-nfb-' + di;
+      vfb.style.cssText = 'min-height:0;margin:0;display:inline;';
+      vrow.appendChild(vbtn);
+      vrow.appendChild(vfb);
+      wrap.appendChild(vrow);
+
+      if (di < 6) {
+        const hr = document.createElement('hr');
+        hr.style.cssText = 'border:none;border-top:1px solid #e5e5e0;margin:14px 0;';
+        wrap.appendChild(hr);
+      }
+
+      cont.appendChild(wrap);
+    });
+
+    for (let di = 0; di < 7; di++) renderNoteRow(di);
+  }
+
+  function renderNoteRow(di) {
+    const slotsDiv = document.getElementById('hm-nslots-' + di);
+    const poolDiv = document.getElementById('hm-npool-' + di);
+    if (!slotsDiv || !poolDiv) return;
+
+    slotsDiv.querySelectorAll('.note-slot').forEach((sz, slot) => {
+      sz.innerHTML = '';
+      sz.classList.remove('correct','wrong','drag-over');
+      const note = noteZones[di][slot];
+      if (note) {
+        const pill = makeNotePill(di, note, slot);
+        sz.appendChild(pill);
+      }
+    });
+
+    poolDiv.innerHTML = '';
+    const placed = new Set(noteZones[di].filter(n => n !== null));
+    notePools[di].forEach(note => {
+      if (placed.has(note)) return;
+      poolDiv.appendChild(makeNotePill(di, note, null));
+    });
+  }
+
+  function makeNotePill(di, note, fromSlot) {
+    const pill = document.createElement('div');
+    pill.className = 'note-pill';
+    pill.textContent = note;
+    pill.draggable = true;
+    pill.addEventListener('dragstart', () => {
+      dragSrc = { kind: 'note', di, note, fromSlot };
+      setTimeout(() => pill.classList.add('dragging'), 0);
+    });
+    pill.addEventListener('dragend', () => pill.classList.remove('dragging'));
+    return pill;
+  }
+
+  function verifyNotes(di) {
+    const sn = getScale(hmRoot);
+    const correct = new Set(getChordNotes(sn, di));
+    const slotsDiv = document.getElementById('hm-nslots-' + di);
+    let ok = true;
+    const filled = noteZones[di].filter(n => n !== null).length;
+    slotsDiv.querySelectorAll('.note-slot').forEach((sz, slot) => {
+      sz.classList.remove('correct','wrong');
+      const note = noteZones[di][slot];
+      if (!note) { ok = false; return; }
+      if (correct.has(note)) sz.classList.add('correct');
+      else { sz.classList.add('wrong'); ok = false; }
+    });
+    const fb = document.getElementById('hm-nfb-' + di);
+    const allGood = ok && filled === 3;
+    fb.className = 'feedback ' + (allGood ? 'success' : 'error');
+    fb.textContent = allGood ? '✓' : '✗';
+  }
+
+  /* ── Seletor de tônica ── */
+  document.querySelectorAll('.toggle[data-hmroot]').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.toggle[data-hmroot]').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      hmRoot = t.dataset.hmroot;
+      buildAll();
+    });
+  });
+
+  function buildAll() {
+    buildScale();
+    buildChords();
+    buildNotes();
+  }
+
+  buildAll();
 })();
 </script>
 </body>

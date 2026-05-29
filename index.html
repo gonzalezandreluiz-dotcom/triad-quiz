@@ -284,11 +284,20 @@ const TUNING = ['E','A','D','G','B','E'];
 function noteAt(s, f) { return NOTES[(NOTES.indexOf(TUNING[s]) + f) % 12]; }
 
 const Audio = {
-  sampler: null,
+  guitar: null,
+  piano: null,
   async init() {
-    if (this.sampler) return;
+    if (this.guitar) return;
     await Tone.start();
-    this.sampler = new Tone.Sampler({
+    this.guitar = new Tone.Sampler({
+      urls: {
+        E2:'E2.mp3', A2:'A2.mp3', D3:'D3.mp3', G3:'G3.mp3',
+        B3:'B3.mp3', E4:'E4.mp3', A4:'A4.mp3', D5:'D5.mp3',
+        G5:'G5.mp3'
+      },
+      baseUrl: 'https://tonejs.github.io/audio/guitar-acoustic/',
+    }).toDestination();
+    this.piano = new Tone.Sampler({
       urls: {
         A0:'A0.mp3', C1:'C1.mp3', 'D#1':'Ds1.mp3', 'F#1':'Fs1.mp3',
         A1:'A1.mp3', C2:'C2.mp3', 'D#2':'Ds2.mp3', 'F#2':'Fs2.mp3',
@@ -302,13 +311,15 @@ const Audio = {
       baseUrl: 'https://tonejs.github.io/audio/salamander/',
     }).toDestination();
   },
-  playNote(note, octave) {
-    if (!this.sampler) return;
-    try { this.sampler.triggerAttackRelease(note + octave, '8n'); } catch(e) {}
+  playNote(note, octave, instrument) {
+    const s = instrument === 'piano' ? this.piano : this.guitar;
+    if (!s) return;
+    try { s.triggerAttackRelease(note + octave, '8n'); } catch(e) {}
   },
-  playChord(notes, octave) {
-    if (!this.sampler) return;
-    notes.forEach(n => { try { this.sampler.triggerAttackRelease(n + octave, '2n'); } catch(e) {} });
+  playChord(notes, octave, instrument) {
+    const s = instrument === 'piano' ? this.piano : this.guitar;
+    if (!s) return;
+    notes.forEach(n => { try { s.triggerAttackRelease(n + octave, '2n'); } catch(e) {} });
   }
 };
 
@@ -711,7 +722,7 @@ const TRIADS = {
 
 function kbPress(el) {
   el.classList.add('on');
-  Audio.playNote(el.dataset.note, +el.dataset.oct);
+  Audio.playNote(el.dataset.note, +el.dataset.oct, 'piano');
 }
 function kbRelease(el) {
   el.classList.remove('on');

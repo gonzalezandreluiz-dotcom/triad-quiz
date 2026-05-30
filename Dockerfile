@@ -1,8 +1,8 @@
 FROM nginx:alpine
-# commit: 4843935
+ARG CACHEBUST=2026-05-30T00:30
 RUN apk add --no-cache curl \
- && curl -sf "https://raw.githubusercontent.com/gonzalezandreluiz-dotcom/triad-quiz/4843935/index.html" \
+ && curl -sf "https://raw.githubusercontent.com/gonzalezandreluiz-dotcom/triad-quiz/master/index.html" \
          -o /usr/share/nginx/html/index.html \
- && curl -sf "https://raw.githubusercontent.com/gonzalezandreluiz-dotcom/triad-quiz/4843935/logo.svg" \
+ && curl -sf "https://raw.githubusercontent.com/gonzalezandreluiz-dotcom/triad-quiz/master/logo.svg" \
          -o /usr/share/nginx/html/logo.svg \
  && apk del curl

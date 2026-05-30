@@ -337,44 +337,78 @@ const TUNING = ['E','A','D','G','B','E'];
 function noteAt(s, f) { return NOTES[(NOTES.indexOf(TUNING[s]) + f) % 12]; }
 
 const Audio = {
-  pluck: null,   // PluckSynth individual (Karplus-Strong — corda pulsada)
-  strums: null,  // array de PluckSynth para acordes com strumming
-  piano: null,   // PolySynth sine para a aba Teclado
+  guitar: null,      // Sampler real de violão (carrega async)
+  piano: null,       // Sampler real de piano Salamander (carrega async)
+  pluck: null,       // PluckSynth: fallback imediato para violão (sem carregamento)
+  strums: null,      // PluckSynths para acordes com strum
+  pianoFallback: null, // PolySynth sine: fallback imediato para teclado
+  guitarReady: false,
+  pianoReady: false,
   async init() {
     if (this.pluck) return;
     await Tone.start();
-    this.pluck = new Tone.PluckSynth({
-      attackNoise: 1.2, dampening: 3800, resonance: 0.985
-    }).toDestination();
+    // Fallbacks imediatos (sem carregamento de arquivos)
+    this.pluck = new Tone.PluckSynth({ attackNoise: 1.5, dampening: 4000, resonance: 0.99 }).toDestination();
     this.strums = Array.from({length: 3}, () =>
-      new Tone.PluckSynth({ attackNoise: 0.9, dampening: 3500, resonance: 0.975 }).toDestination()
+      new Tone.PluckSynth({ attackNoise: 1.0, dampening: 3800, resonance: 0.98 }).toDestination()
     );
-    this.piano = new Tone.PolySynth(Tone.Synth, {
+    this.pianoFallback = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: 'sine' },
       envelope: { attack: 0.005, decay: 0.3, sustain: 0.4, release: 1.0 },
       volume: -6
     }).toDestination();
+    // Sampler de violão real — nbrosowsky.github.io/tonejs-instruments (CDN dedicada)
+    try {
+      this.guitar = new Tone.Sampler({
+        urls: {
+          'A2':'A2.mp3','A3':'A3.mp3','A4':'A4.mp3',
+          'B3':'B3.mp3','B4':'B4.mp3',
+          'C4':'C4.mp3','C5':'C5.mp3',
+          'D4':'D4.mp3','E3':'E3.mp3',
+          'E4':'E4.mp3','G3':'G3.mp3','G4':'G4.mp3'
+        },
+        baseUrl: 'https://nbrosowsky.github.io/tonejs-instruments/samples/guitar-acoustic/',
+        onload: () => { this.guitarReady = true; }
+      }).toDestination();
+    } catch(e) {}
+    // Sampler de piano Salamander — idêntico ao original que funcionava
+    try {
+      this.piano = new Tone.Sampler({
+        urls: {
+          A0:'A0.mp3', C1:'C1.mp3', 'D#1':'Ds1.mp3', 'F#1':'Fs1.mp3',
+          A1:'A1.mp3', C2:'C2.mp3', 'D#2':'Ds2.mp3', 'F#2':'Fs2.mp3',
+          A2:'A2.mp3', C3:'C3.mp3', 'D#3':'Ds3.mp3', 'F#3':'Fs3.mp3',
+          A3:'A3.mp3', C4:'C4.mp3', 'D#4':'Ds4.mp3', 'F#4':'Fs4.mp3',
+          A4:'A4.mp3', C5:'C5.mp3', 'D#5':'Ds5.mp3', 'F#5':'Fs5.mp3',
+          A5:'A5.mp3', C6:'C6.mp3', 'D#6':'Ds6.mp3', 'F#6':'Fs6.mp3',
+          A6:'A6.mp3', C7:'C7.mp3', 'D#7':'Ds7.mp3', 'F#7':'Fs7.mp3',
+          A7:'A7.mp3', C8:'C8.mp3'
+        },
+        baseUrl: 'https://tonejs.github.io/audio/salamander/',
+        onload: () => { this.pianoReady = true; }
+      }).toDestination();
+    } catch(e) {}
   },
   playNote(note, octave, instrument) {
     if (instrument === 'piano') {
-      if (!this.piano) return;
-      try { this.piano.triggerAttackRelease(note + octave, '8n'); } catch(e) {}
+      if (this.pianoReady) { try { this.piano.triggerAttackRelease(note + octave, '8n'); } catch(e) {} }
+      else if (this.pianoFallback) { try { this.pianoFallback.triggerAttackRelease(note + octave, '8n'); } catch(e) {} }
     } else {
-      if (!this.pluck) return;
-      try { this.pluck.triggerAttack(note + (octave || 4)); } catch(e) {}
+      if (this.guitarReady) { try { this.guitar.triggerAttackRelease(note + (octave||4), '8n'); } catch(e) {} }
+      else if (this.pluck) { try { this.pluck.triggerAttack(note + (octave||4)); } catch(e) {} }
     }
   },
   playChord(notes, octave, instrument) {
     if (instrument === 'piano') {
-      if (!this.piano) return;
-      try { this.piano.triggerAttackRelease(notes.map(n => n + octave), '2n'); } catch(e) {}
+      if (this.pianoReady) { try { this.piano.triggerAttackRelease(notes.map(n=>n+octave), '2n'); } catch(e) {} }
+      else if (this.pianoFallback) { try { this.pianoFallback.triggerAttackRelease(notes.map(n=>n+octave), '2n'); } catch(e) {} }
     } else {
-      if (!this.strums) return;
       const now = Tone.now();
-      notes.forEach((note, i) => {
-        const s = this.strums[i % this.strums.length];
-        try { s.triggerAttack(note + octave, now + i * 0.06); } catch(e) {}
-      });
+      if (this.guitarReady) {
+        notes.forEach((n,i) => { try { this.guitar.triggerAttackRelease(n+octave,'4n',now+i*0.06); } catch(e) {} });
+      } else if (this.strums) {
+        notes.forEach((n,i) => { const s=this.strums[i%3]; try { s.triggerAttack(n+octave,now+i*0.06); } catch(e) {} });
+      }
     }
   }
 };

@@ -837,13 +837,13 @@ function renderKeyboard(fromOct, toOct) {
 
   function buildChords() {
     chordZones = new Array(7).fill(null);
+    // Ordem: maiores → menores → diminutas, cada grupo em ordem cromática
     allChordPool = [];
-    NOTES.forEach(root => {
-      ['maj','min','dim'].forEach(type => {
+    ['maj','min','dim'].forEach(type => {
+      NOTES.forEach(root => {
         allChordPool.push({ root, type, name: root + CHORD_SYM[type] });
       });
     });
-    allChordPool.sort(() => Math.random() - 0.5);
     renderChordSlots();
     renderChordPool();
     const fb = document.getElementById('hm-chord-fb');
@@ -929,7 +929,9 @@ function renderKeyboard(fromOct, toOct) {
   function buildNotes() {
     const sn = getScale(hmRoot);
     noteZones = Array.from({length:7}, () => [null,null,null]);
-    notePools = sn.map(() => [...NOTES].sort(() => Math.random() - 0.5));
+    // Notas naturais primeiro, depois sustenidos
+    const orderedNotes = ['C','D','E','F','G','A','B','C#','D#','F#','G#','A#'];
+    notePools = sn.map(() => [...orderedNotes]);
 
     const cont = document.getElementById('hm-notes-container');
     cont.innerHTML = '';

@@ -114,7 +114,7 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
 .chord-slot.correct .chord-slot-label { color: #4caf50; }
 .chord-slot.wrong { border-style: solid; border-color: #e53935; background: #fff8f8; }
 .chord-slot.wrong .chord-slot-label { color: #e53935; }
-.pill-pool { display: flex; gap: 8px; flex-wrap: wrap; min-height: 50px; background: #f0f0eb; border-radius: 10px; padding: 8px; }
+.pill-pool { display: flex; gap: 8px; flex-wrap: wrap; min-height: 50px; max-height: 200px; overflow-y: auto; background: #f0f0eb; border-radius: 10px; padding: 8px; }
 .chord-pill { padding: 9px 16px; background: white; border: 1.5px solid #ddd; border-radius: 20px; cursor: grab; font-size: 14px; font-weight: 700; user-select: none; transition: transform 0.1s, border-color 0.1s; white-space: nowrap; }
 .chord-pill:hover { border-color: #999; transform: translateY(-1px); }
 .chord-pill.dragging { opacity: 0.3; }
@@ -337,42 +337,31 @@ const TUNING = ['E','A','D','G','B','E'];
 function noteAt(s, f) { return NOTES[(NOTES.indexOf(TUNING[s]) + f) % 12]; }
 
 const Audio = {
-  guitar: null,
+  synth: null,
   piano: null,
   async init() {
-    if (this.guitar) return;
+    if (this.synth) return;
     await Tone.start();
-    this.guitar = new Tone.Sampler({
-      urls: {
-        E2:'E2.mp3', A2:'A2.mp3', D3:'D3.mp3', G3:'G3.mp3',
-        B3:'B3.mp3', E4:'E4.mp3', A4:'A4.mp3', D5:'D5.mp3',
-        G5:'G5.mp3'
-      },
-      baseUrl: 'https://tonejs.github.io/audio/guitar-acoustic/',
+    this.synth = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'triangle' },
+      envelope: { attack: 0.01, decay: 0.6, sustain: 0.05, release: 1.4 },
+      volume: -8
     }).toDestination();
-    this.piano = new Tone.Sampler({
-      urls: {
-        A0:'A0.mp3', C1:'C1.mp3', 'D#1':'Ds1.mp3', 'F#1':'Fs1.mp3',
-        A1:'A1.mp3', C2:'C2.mp3', 'D#2':'Ds2.mp3', 'F#2':'Fs2.mp3',
-        A2:'A2.mp3', C3:'C3.mp3', 'D#3':'Ds3.mp3', 'F#3':'Fs3.mp3',
-        A3:'A3.mp3', C4:'C4.mp3', 'D#4':'Ds4.mp3', 'F#4':'Fs4.mp3',
-        A4:'A4.mp3', C5:'C5.mp3', 'D#5':'Ds5.mp3', 'F#5':'Fs5.mp3',
-        A5:'A5.mp3', C6:'C6.mp3', 'D#6':'Ds6.mp3', 'F#6':'Fs6.mp3',
-        A6:'A6.mp3', C7:'C7.mp3', 'D#7':'Ds7.mp3', 'F#7':'Fs7.mp3',
-        A7:'A7.mp3', C8:'C8.mp3'
-      },
-      baseUrl: 'https://tonejs.github.io/audio/salamander/',
+    this.piano = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.005, decay: 0.3, sustain: 0.4, release: 1.0 },
+      volume: -6
     }).toDestination();
   },
   playNote(note, octave, instrument) {
-    const s = instrument === 'piano' ? this.piano : this.guitar;
+    const s = instrument === 'piano' ? this.piano : this.synth;
     if (!s) return;
     try { s.triggerAttackRelease(note + octave, '8n'); } catch(e) {}
   },
   playChord(notes, octave, instrument) {
-    const s = instrument === 'piano' ? this.piano : this.guitar;
+    const s = instrument === 'piano' ? this.piano : this.synth;
     if (!s) return;
-    notes.forEach(n => { try { s.triggerAttackRelease(n + octave, '2n'); } catch(e) {} });
+    try { s.triggerAttackRelease(notes.map(n => n + octave), '2n'); } catch(e) {}
   }
 };
 
@@ -829,12 +818,18 @@ function renderKeyboard(fromOct, toOct) {
   });
 
   /* ── Seção 2: Ordenar acordes ── */
-  let chordZones = new Array(7).fill(null);
-  let chordShuffled = [];
+  let chordZones = new Array(7).fill(null); // cada entrada: { root, type, name } ou null
+  let allChordPool = [];
 
   function buildChords() {
     chordZones = new Array(7).fill(null);
-    chordShuffled = [...Array(7).keys()].sort(() => Math.random() - 0.5);
+    allChordPool = [];
+    NOTES.forEach(root => {
+      ['maj','min','dim'].forEach(type => {
+        allChordPool.push({ root, type, name: root + CHORD_SYM[type] });
+      });
+    });
+    allChordPool.sort(() => Math.random() - 0.5);
     renderChordSlots();
     renderChordPool();
     const fb = document.getElementById('hm-chord-fb');
@@ -843,7 +838,6 @@ function renderKeyboard(fromOct, toOct) {
   }
 
   function renderChordSlots() {
-    const sn = getScale(hmRoot);
     const cont = document.getElementById('hm-chord-slots');
     cont.innerHTML = '';
     DEGREES.forEach((deg, zi) => {
@@ -855,8 +849,8 @@ function renderKeyboard(fromOct, toOct) {
       lbl.textContent = deg;
       slot.appendChild(lbl);
 
-      const di = chordZones[zi];
-      if (di !== null) slot.appendChild(makeChordPill(sn, di, zi));
+      const chord = chordZones[zi];
+      if (chord) slot.appendChild(makeChordPill(chord, zi));
 
       slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drag-over'); });
       slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
@@ -865,7 +859,7 @@ function renderKeyboard(fromOct, toOct) {
         slot.classList.remove('drag-over');
         if (!dragSrc || dragSrc.kind !== 'chord') return;
         if (dragSrc.fromZone !== null) chordZones[dragSrc.fromZone] = null;
-        chordZones[zi] = dragSrc.di;
+        chordZones[zi] = dragSrc.chord;
         renderChordSlots();
         renderChordPool();
       });
@@ -874,23 +868,22 @@ function renderKeyboard(fromOct, toOct) {
   }
 
   function renderChordPool() {
-    const sn = getScale(hmRoot);
     const pool = document.getElementById('hm-chord-pool');
     pool.innerHTML = '';
-    const placed = new Set(chordZones.filter(x => x !== null));
-    chordShuffled.forEach(di => {
-      if (placed.has(di)) return;
-      pool.appendChild(makeChordPill(sn, di, null));
+    const placed = new Set(chordZones.filter(c => c !== null).map(c => c.name));
+    allChordPool.forEach(chord => {
+      if (placed.has(chord.name)) return;
+      pool.appendChild(makeChordPill(chord, null));
     });
   }
 
-  function makeChordPill(sn, di, fromZone) {
+  function makeChordPill(chord, fromZone) {
     const pill = document.createElement('div');
     pill.className = 'chord-pill';
-    pill.textContent = chordName(sn, di);
+    pill.textContent = chord.name;
     pill.draggable = true;
     pill.addEventListener('dragstart', () => {
-      dragSrc = { kind: 'chord', di, fromZone };
+      dragSrc = { kind: 'chord', chord, fromZone };
       setTimeout(() => pill.classList.add('dragging'), 0);
     });
     pill.addEventListener('dragend', () => pill.classList.remove('dragging'));
@@ -898,13 +891,14 @@ function renderKeyboard(fromOct, toOct) {
   }
 
   document.getElementById('hm-chord-check').addEventListener('click', () => {
+    const sn = getScale(hmRoot);
     const slots = document.querySelectorAll('#hm-chord-slots .chord-slot');
     let ok = true;
     slots.forEach((slot, zi) => {
       slot.classList.remove('correct','wrong');
-      const di = chordZones[zi];
-      if (di === null) { ok = false; return; }
-      if (di === zi) slot.classList.add('correct');
+      const chord = chordZones[zi];
+      if (!chord) { ok = false; return; }
+      if (chord.root === sn[zi] && chord.type === CHORD_TYPES[zi]) slot.classList.add('correct');
       else { slot.classList.add('wrong'); ok = false; }
     });
     const fb = document.getElementById('hm-chord-fb');
@@ -921,7 +915,7 @@ function renderKeyboard(fromOct, toOct) {
   function buildNotes() {
     const sn = getScale(hmRoot);
     noteZones = Array.from({length:7}, () => [null,null,null]);
-    notePools = sn.map((_, di) => [...getChordNotes(sn, di)].sort(() => Math.random() - 0.5));
+    notePools = sn.map(() => [...NOTES].sort(() => Math.random() - 0.5));
 
     const cont = document.getElementById('hm-notes-container');
     cont.innerHTML = '';

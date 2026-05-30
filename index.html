@@ -337,16 +337,18 @@ const TUNING = ['E','A','D','G','B','E'];
 function noteAt(s, f) { return NOTES[(NOTES.indexOf(TUNING[s]) + f) % 12]; }
 
 const Audio = {
-  synth: null,
-  piano: null,
+  pluck: null,   // PluckSynth individual (Karplus-Strong — corda pulsada)
+  strums: null,  // array de PluckSynth para acordes com strumming
+  piano: null,   // PolySynth sine para a aba Teclado
   async init() {
-    if (this.synth) return;
+    if (this.pluck) return;
     await Tone.start();
-    this.synth = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'triangle' },
-      envelope: { attack: 0.01, decay: 0.6, sustain: 0.05, release: 1.4 },
-      volume: -8
+    this.pluck = new Tone.PluckSynth({
+      attackNoise: 1.2, dampening: 3800, resonance: 0.985
     }).toDestination();
+    this.strums = Array.from({length: 3}, () =>
+      new Tone.PluckSynth({ attackNoise: 0.9, dampening: 3500, resonance: 0.975 }).toDestination()
+    );
     this.piano = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: 'sine' },
       envelope: { attack: 0.005, decay: 0.3, sustain: 0.4, release: 1.0 },
@@ -354,14 +356,26 @@ const Audio = {
     }).toDestination();
   },
   playNote(note, octave, instrument) {
-    const s = instrument === 'piano' ? this.piano : this.synth;
-    if (!s) return;
-    try { s.triggerAttackRelease(note + octave, '8n'); } catch(e) {}
+    if (instrument === 'piano') {
+      if (!this.piano) return;
+      try { this.piano.triggerAttackRelease(note + octave, '8n'); } catch(e) {}
+    } else {
+      if (!this.pluck) return;
+      try { this.pluck.triggerAttack(note + (octave || 4)); } catch(e) {}
+    }
   },
   playChord(notes, octave, instrument) {
-    const s = instrument === 'piano' ? this.piano : this.synth;
-    if (!s) return;
-    try { s.triggerAttackRelease(notes.map(n => n + octave), '2n'); } catch(e) {}
+    if (instrument === 'piano') {
+      if (!this.piano) return;
+      try { this.piano.triggerAttackRelease(notes.map(n => n + octave), '2n'); } catch(e) {}
+    } else {
+      if (!this.strums) return;
+      const now = Tone.now();
+      notes.forEach((note, i) => {
+        const s = this.strums[i % this.strums.length];
+        try { s.triggerAttack(note + octave, now + i * 0.06); } catch(e) {}
+      });
+    }
   }
 };
 
